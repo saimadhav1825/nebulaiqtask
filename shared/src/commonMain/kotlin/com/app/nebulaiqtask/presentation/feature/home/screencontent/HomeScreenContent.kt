@@ -218,7 +218,7 @@ fun HomeScreenContent(
                                 GroupMapView(
                                     geofence = group.geofence,
                                     members = state.members,
-                                    onMemberClicked = { memberId ->
+                                    onMemberClick = { memberId ->
                                         onIntent(HomeIntent.OnMemberClicked(memberId, group.id))
                                     },
                                     modifier = Modifier

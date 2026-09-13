@@ -37,6 +37,9 @@ fun HomeScreen(
                 is HomeEffect.NavigateToMemberDetail -> {
                     onNavigateToMemberDetail(effect.memberId, effect.groupId)
                 }
+                is HomeEffect.RequestSystemPermissions -> {
+                    snackbarHostState.showSnackbar("Opening Settings to grant Location & Notification permissions")
+                }
             }
         }
     }

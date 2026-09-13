@@ -14,10 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.nebulaiqtask.domain.model.GeofenceZone
+import com.app.nebulaiqtask.domain.model.LocationCoordinate
 import com.app.nebulaiqtask.presentation.feature.creategroup.components.presetpicker.GeofencePresetPicker
 import com.app.nebulaiqtask.presentation.feature.creategroup.components.radiusslider.GeofenceRadiusSlider
 import com.app.nebulaiqtask.presentation.feature.creategroup.intent.CreateGroupIntent
 import com.app.nebulaiqtask.presentation.feature.creategroup.state.CreateGroupState
+import com.app.nebulaiqtask.presentation.platform.GroupMapView
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -133,6 +136,37 @@ fun CreateGroupScreenContent(
                         radiusMeters = state.radiusMeters,
                         onRadiusChanged = { onIntent(CreateGroupIntent.OnRadiusChanged(it)) }
                     )
+
+                    // Interactive Perimeter Preview
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "Interactive Perimeter Preview (Tap/drag map to reposition center):",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = NebulaColors.TextPrimary
+                        )
+                        Text(
+                            text = "Center: ${((state.latitude * 10000).toInt() / 10000.0)}, ${((state.longitude * 10000).toInt() / 10000.0)}",
+                            fontSize = 11.sp,
+                            color = NebulaColors.AccentCyan
+                        )
+                        GroupMapView(
+                            geofence = GeofenceZone(
+                                id = "preview_fence",
+                                name = state.geofenceName.ifBlank { "Preview Geofence" },
+                                center = LocationCoordinate(state.latitude, state.longitude),
+                                radiusMeters = state.radiusMeters
+                            ),
+                            members = emptyList(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            isInteractive = true,
+                            onMapCenterChange = { lat, lon ->
+                                onIntent(CreateGroupIntent.OnCoordinatesChanged(lat, lon))
+                            }
+                        )
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
