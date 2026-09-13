@@ -8,4 +8,5 @@ expect class PlatformNotificationManager {
         memberName: String
     )
     fun playBreachAlertHapticAndAudio()
+    fun dismissBreachNotification(memberName: String)
 }

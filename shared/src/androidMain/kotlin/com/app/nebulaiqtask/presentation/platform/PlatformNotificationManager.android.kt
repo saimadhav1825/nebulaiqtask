@@ -74,11 +74,17 @@ actual class PlatformNotificationManager(
             .build()
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notificationId = (System.currentTimeMillis() % 100000).toInt()
+        val notificationId = 1000 + (memberName.hashCode() and 0x7FFF)
         notificationManager.notify(notificationId, notification)
 
         // Physical cue in foreground as well
         playBreachAlertHapticAndAudio()
+    }
+
+    actual fun dismissBreachNotification(memberName: String) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationId = 1000 + (memberName.hashCode() and 0x7FFF)
+        notificationManager.cancel(notificationId)
     }
 
     actual fun playBreachAlertHapticAndAudio() {

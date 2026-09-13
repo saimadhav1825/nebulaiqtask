@@ -7,9 +7,11 @@ import com.app.nebulaiqtask.data.dto.MemberDto
 import com.app.nebulaiqtask.data.mapper.GeofenceMapper
 import com.app.nebulaiqtask.data.mapper.GroupMapper
 import com.app.nebulaiqtask.domain.model.GeofenceZone
+import com.app.nebulaiqtask.domain.model.LocationCoordinate
 import com.app.nebulaiqtask.domain.model.TrackingGroup
 import com.app.nebulaiqtask.domain.repository.TrackingGroupRepository
 import com.app.nebulaiqtask.domain.repository.UserRepository
+import com.app.nebulaiqtask.domain.util.GeoDistanceCalculator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -134,16 +136,38 @@ class TrackingGroupRepositoryImpl(
         val profile = userRepository.getCurrentProfile()
         val initials = profile.initials.ifBlank { "MB" }
 
+        // Determine existing group to evaluate real containment
+        val existingGroup = firebaseDataSource.getGroup(sanitizedCode).getOrNull()
+            ?: localDataSource.getGroup(sanitizedCode)
+
+        val locDto = localDataSource.userLiveLocation.value
+            ?: com.app.nebulaiqtask.data.dto.LocationDto(
+                existingGroup?.geofence?.center?.latitude ?: 37.7749,
+                existingGroup?.geofence?.center?.longitude ?: -122.4194,
+                3.5f,
+                now
+            )
+
+        val (isInside, distanceOutside) = if (existingGroup != null) {
+            val domainLoc = LocationCoordinate(locDto.latitude, locDto.longitude, locDto.accuracyMeters, locDto.timestamp)
+            val domainFence = geofenceMapper.toDomain(existingGroup.geofence)
+            val inside = GeoDistanceCalculator.isCoordinateInsideFence(domainLoc, domainFence)
+            val dist = GeoDistanceCalculator.distanceOutsideFenceMeters(domainLoc, domainFence)
+            inside to dist
+        } else {
+            true to 0.0
+        }
+
         val newMember = MemberDto(
             id = profile.userId,
             name = profile.displayName,
             role = "MEMBER",
             avatarColorHex = profile.avatarColorHex,
             initials = initials,
-            currentLocation = localDataSource.userLiveLocation.value ?: com.app.nebulaiqtask.data.dto.LocationDto(37.7749, -122.4194, 3.5f, now),
+            currentLocation = locDto,
             batteryPercent = 100,
-            isInsideGeofence = true,
-            distanceToFenceMeters = 0.0,
+            isInsideGeofence = isInside,
+            distanceToFenceMeters = distanceOutside,
             isLocalUser = true,
             lastUpdatedMillis = now
         )

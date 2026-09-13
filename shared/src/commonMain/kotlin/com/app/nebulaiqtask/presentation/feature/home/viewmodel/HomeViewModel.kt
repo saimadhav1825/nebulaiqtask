@@ -161,7 +161,12 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = membersList.size - 1
                             )
-                            notificationManager.playBreachAlertHapticAndAudio()
+                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER) {
+                            sendBreachNotificationUseCase.onMemberReturnedToSafety(
+                                groupId = groupId,
+                                memberId = member.id,
+                                memberName = member.name
+                            )
                         }
                     }
                 }
@@ -228,7 +233,7 @@ class HomeViewModel(
                     if (breached != null) {
                         val check = checkGeofenceBreachUseCase(
                             groupId = group.id,
-                            member = breached,
+                            member = breached.copy(isInsideGeofence = true),
                             fence = group.geofence,
                             totalGroupMembersCount = _state.value.members.size
                         )
@@ -238,13 +243,6 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = _state.value.members.size - 1
                             )
-                            notificationManager.showHeadsUpBreachNotification(
-                                title = "🚨 GEOFENCE BREACH: ${breached.name}",
-                                message = "${breached.name} stepped outside ${group.geofence.name}!",
-                                breachDistanceMeters = check.distanceOutsideMeters,
-                                memberName = breached.name
-                            )
-                            notificationManager.playBreachAlertHapticAndAudio()
                         }
                         _effect.send(HomeEffect.ShowSnackbar("⚠️ Breach triggered for ${breached.name}! Group alerted."))
                     }
@@ -255,6 +253,11 @@ class HomeViewModel(
                     val group = _state.value.activeGroup ?: return@launch
                     val safe = triggerMemberReturnUseCase(group.id, intent.memberId)
                     if (safe != null) {
+                        sendBreachNotificationUseCase.onMemberReturnedToSafety(
+                            groupId = group.id,
+                            memberId = safe.id,
+                            memberName = safe.name
+                        )
                         _effect.send(HomeEffect.ShowSnackbar("✅ ${safe.name} returned inside safe perimeter."))
                     }
                 }
@@ -333,6 +336,12 @@ class HomeViewModel(
 
             result.onSuccess { joinedGroup ->
                 activeGroupId = joinedGroup.id
+                // Initialize breach tracking for any members currently outside so join does not trigger breach notifications
+                for (m in joinedGroup.members) {
+                    if (!m.isInsideGeofence) {
+                        checkGeofenceBreachUseCase.markAsInitiallyOutside(joinedGroup.id, m.id)
+                    }
+                }
                 viewModelScope.launch { saveActiveGroupIdUseCase(joinedGroup.id) }
                 _state.update {
                     it.copy(
@@ -402,7 +411,12 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = _state.value.members.size - 1
                             )
-                            notificationManager.playBreachAlertHapticAndAudio()
+                        } else if (check.transition == GeofenceTransition.TRANSITION_ENTER) {
+                            sendBreachNotificationUseCase.onMemberReturnedToSafety(
+                                groupId = group.id,
+                                memberId = localMember.id,
+                                memberName = localMember.name
+                            )
                         }
                     }
                 }

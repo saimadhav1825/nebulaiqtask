@@ -8,8 +8,35 @@ class SendBreachNotificationUseCase(
     private val notificationRepository: NotificationRepository,
     private val geofenceTrackerRepository: GeofenceTrackerRepository
 ) {
+    // Tracks member keys currently notified: "$groupId:$memberId"
+    private val notifiedMembers = mutableSetOf<String>()
+
     suspend operator fun invoke(alert: BreachAlert, groupName: String, recipientCount: Int = 9) {
-        geofenceTrackerRepository.recordBreachAlert(alert)
-        notificationRepository.dispatchBreachNotification(alert, groupName, recipientCount)
+        val key = "${alert.groupId}:${alert.memberId}"
+        val isNewNotification = synchronized(notifiedMembers) {
+            notifiedMembers.add(key)
+        }
+
+        if (isNewNotification) {
+            geofenceTrackerRepository.recordBreachAlert(alert)
+            notificationRepository.dispatchBreachNotification(alert, groupName, recipientCount)
+        }
+    }
+
+    fun onMemberReturnedToSafety(groupId: String, memberId: String, memberName: String) {
+        synchronized(notifiedMembers) {
+            notifiedMembers.remove("$groupId:$memberId")
+        }
+        notificationRepository.dismissBreachNotification(memberName)
+    }
+
+    fun resetState(groupId: String, memberId: String? = null) {
+        synchronized(notifiedMembers) {
+            if (memberId != null) {
+                notifiedMembers.remove("$groupId:$memberId")
+            } else {
+                notifiedMembers.removeAll { it.startsWith("$groupId:") }
+            }
+        }
     }
 }

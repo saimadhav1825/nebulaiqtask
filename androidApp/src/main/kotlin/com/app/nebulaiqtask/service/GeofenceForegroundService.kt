@@ -14,6 +14,7 @@ import com.app.nebulaiqtask.domain.repository.MemberRepository
 import com.app.nebulaiqtask.domain.repository.TrackingGroupRepository
 import com.app.nebulaiqtask.domain.repository.UserRepository
 import com.app.nebulaiqtask.domain.usecase.CheckGeofenceBreachUseCase
+import com.app.nebulaiqtask.domain.usecase.GeofenceTransition
 import com.app.nebulaiqtask.domain.usecase.SendBreachNotificationUseCase
 import com.app.nebulaiqtask.presentation.platform.PlatformDeviceTelemetry
 import com.app.nebulaiqtask.presentation.platform.PlatformLocationTracker
@@ -112,6 +113,12 @@ class GeofenceForegroundService : Service(), KoinComponent {
                             recipientCount = currentGroup.members.size - 1
                         )
                         updateNotification("🚨 YOU EXITED ${currentGroup.geofence.name} (+${check.distanceOutsideMeters.toInt()}m)!")
+                    } else if (check.transition == GeofenceTransition.TRANSITION_ENTER) {
+                        sendBreachNotificationUseCase.onMemberReturnedToSafety(
+                            groupId = currentGroup.id,
+                            memberId = localMember.id,
+                            memberName = localMember.name
+                        )
                     }
                 }
             }
@@ -136,6 +143,12 @@ class GeofenceForegroundService : Service(), KoinComponent {
                                 alert = memberAlert,
                                 groupName = group.name,
                                 recipientCount = group.members.size - 1
+                            )
+                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER) {
+                            sendBreachNotificationUseCase.onMemberReturnedToSafety(
+                                groupId = groupId,
+                                memberId = member.id,
+                                memberName = member.name
                             )
                         }
                         if (!result.isInside) {

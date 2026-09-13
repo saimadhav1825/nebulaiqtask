@@ -35,6 +35,10 @@ actual val platformModule: Module = module {
             ) {
                 manager.showHeadsUpBreachNotification(title, message, breachDistanceMeters, memberName)
             }
+
+            override fun dismissBreachNotification(memberName: String) {
+                manager.dismissBreachNotification(memberName)
+            }
         }
     }
 }

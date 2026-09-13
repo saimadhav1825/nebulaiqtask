@@ -7,4 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface NotificationRepository {
     fun getDeliveredNotificationsFlow(): Flow<List<NotificationEvent>>
     suspend fun dispatchBreachNotification(alert: BreachAlert, groupName: String, recipientCount: Int)
+    fun dismissBreachNotification(memberName: String)
 }

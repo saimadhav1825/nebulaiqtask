@@ -57,7 +57,7 @@ class MemberDetailViewModel(
                     val fence = _state.value.geofence
                     if (breached != null && fence != null) {
                         _state.update { it.copy(member = breached) }
-                        val check = checkGeofenceBreachUseCase(groupId, breached, fence)
+                        val check = checkGeofenceBreachUseCase(groupId, breached.copy(isInsideGeofence = true), fence)
                         if (check.generatedAlert != null) {
                             sendBreachNotificationUseCase(check.generatedAlert, "Field Operations", 9)
                         }
@@ -70,6 +70,7 @@ class MemberDetailViewModel(
                     val safe = triggerMemberReturnUseCase(groupId, memberId)
                     if (safe != null) {
                         _state.update { it.copy(member = safe) }
+                        sendBreachNotificationUseCase.onMemberReturnedToSafety(groupId, safe.id, safe.name)
                         _effect.send(MemberDetailEffect.ShowSnackbar("✅ ${safe.name} returned inside safe perimeter."))
                     }
                 }

@@ -7,4 +7,5 @@ interface PlatformNotificationDispatcher {
         breachDistanceMeters: Double,
         memberName: String
     )
+    fun dismissBreachNotification(memberName: String)
 }

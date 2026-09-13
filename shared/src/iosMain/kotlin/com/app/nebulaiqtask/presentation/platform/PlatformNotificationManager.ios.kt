@@ -13,4 +13,8 @@ actual class PlatformNotificationManager {
     actual fun playBreachAlertHapticAndAudio() {
         println("[iOS] Playing haptic and audio")
     }
+
+    actual fun dismissBreachNotification(memberName: String) {
+        println("[iOS] Dismissed breach notification for $memberName")
+    }
 }

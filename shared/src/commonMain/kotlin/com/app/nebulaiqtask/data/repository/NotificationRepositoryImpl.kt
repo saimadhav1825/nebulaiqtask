@@ -57,4 +57,8 @@ class NotificationRepositoryImpl(
 
         dataSource.addNotifications(events)
     }
+
+    override fun dismissBreachNotification(memberName: String) {
+        platformDispatcher.dismissBreachNotification(memberName)
+    }
 }

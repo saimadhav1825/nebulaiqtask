@@ -10,4 +10,8 @@ class IosNotificationDispatcher : PlatformNotificationDispatcher {
         // iOS push / local notification stub for KMP
         println("[iOS Notification] $title: $message (+$breachDistanceMeters m)")
     }
+
+    override fun dismissBreachNotification(memberName: String) {
+        println("[iOS Notification] Dismissed alert for $memberName")
+    }
 }
