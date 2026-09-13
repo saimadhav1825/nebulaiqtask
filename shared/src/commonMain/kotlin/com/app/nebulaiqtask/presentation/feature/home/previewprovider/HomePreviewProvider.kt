@@ -57,7 +57,6 @@ class HomePreviewProvider : PreviewParameterProvider<HomeState> {
                 isAcknowledged = false,
                 notifiedMembersCount = 9
             ),
-            isSimulationRunning = true,
             isTrackingActive = true,
             totalBreachesCount = 1
         )

@@ -12,7 +12,6 @@ val domainModule = module {
     factory { GetGroupMembersUseCase(get()) }
     factory { CheckGeofenceBreachUseCase() }
     factory { UpdateMemberLocationUseCase(get()) }
-    factory { SimulateMemberMovementUseCase() }
     factory { SendBreachNotificationUseCase(get(), get()) }
     factory { GetActiveAlertsUseCase(get()) }
     factory { AcknowledgeAlertUseCase(get()) }
