@@ -39,8 +39,7 @@ fun GeofenceRadiusSlider(
         Slider(
             value = radiusMeters.toFloat(),
             onValueChange = { onRadiusChanged(it.toDouble()) },
-            valueRange = 50f..2000f,
-            steps = 38,
+            valueRange = 1f..2000f,
             colors = SliderDefaults.colors(
                 thumbColor = NebulaColors.PrimaryIndigo,
                 activeTrackColor = NebulaColors.PrimaryIndigo,
@@ -52,7 +51,7 @@ fun GeofenceRadiusSlider(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("50m (Building)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
+            Text("1m (Testing)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
             Text("500m (Campus)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
             Text("2000m (District)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
         }

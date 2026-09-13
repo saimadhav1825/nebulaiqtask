@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.GroupMember
 import com.app.nebulaiqtask.domain.model.LocationCoordinate
+import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
@@ -137,7 +138,7 @@ actual fun GroupMapView(
                 // 1. Geofence Perimeter Radius Circle
                 val metersPerDp = mapState.viewport?.metersPerDpAtTarget ?: 1.0
                 val radiusDp = if (metersPerDp > 0.0) {
-                    (geofence.radiusMeters / metersPerDp).dp
+                    ((geofence.radiusMeters / metersPerDp).dp).coerceAtLeast(18.dp)
                 } else {
                     90.dp
                 }
@@ -305,19 +306,22 @@ private fun MemberMapPin(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isOwner = member.role == MemberRole.LEADER
+    val firstName = member.name.split(" ").firstOrNull().orEmpty().ifBlank { member.name }
+
     Column(
         modifier = modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(42.dp),
             contentAlignment = Alignment.Center
         ) {
             // Ripple expanding halo when member breaches boundary
             if (isBreached) {
                 Box(
                     modifier = Modifier
-                        .size((28 + 18 * rippleProgress).dp)
+                        .size((28 + 20 * rippleProgress).dp)
                         .border(
                             width = (2 * (1f - rippleProgress)).dp,
                             color = NebulaColors.CriticalCrimson.copy(alpha = 1f - rippleProgress),
@@ -327,53 +331,87 @@ private fun MemberMapPin(
             }
 
             // Member avatar circle
+            val borderColor = when {
+                isBreached -> NebulaColors.CriticalCrimson
+                isOwner -> Color(0xFFFFD700) // Vibrant Gold for Owner/Leader
+                member.isLocalUser -> NebulaColors.AccentCyan
+                else -> Color.White
+            }
+            val borderWidth = if (isOwner) 2.5.dp else 2.dp
+
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(if (isOwner) 32.dp else 28.dp)
                     .clip(CircleShape)
                     .background(
                         if (isBreached) NebulaColors.CriticalCrimson else Color(member.avatarColorHex)
                     )
-                    .border(
-                        2.dp,
-                        if (member.isLocalUser) NebulaColors.AccentCyan else Color.White,
-                        CircleShape
-                    ),
+                    .border(borderWidth, borderColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = member.initials,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp
+                    fontSize = if (isOwner) 12.sp else 11.sp
                 )
+            }
+
+            // Owner Crown Badge anchored on top-right corner
+            if (isOwner) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 2.dp, y = (-2).dp)
+                        .size(16.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF1E1B4B))
+                        .border(1.dp, Color(0xFFFFD700), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("👑", fontSize = 9.sp)
+                }
             }
         }
 
-        // Member first name label with breach distance
+        // Member label badge with Owner / You / Breach indicators
+        val badgeBackground = when {
+            isBreached -> NebulaColors.CriticalCrimsonContainer.copy(alpha = 0.95f)
+            isOwner -> Color(0xFF2A2000).copy(alpha = 0.95f) // Golden amber container for Owner
+            else -> NebulaColors.SurfaceDark.copy(alpha = 0.95f)
+        }
+        val badgeBorderColor = when {
+            isBreached -> NebulaColors.CriticalCrimson
+            isOwner -> Color(0xFFFFD700)
+            member.isLocalUser -> NebulaColors.AccentCyan
+            else -> NebulaColors.CardBorder
+        }
+        val labelText = when {
+            isBreached -> "$firstName (+${member.distanceToFenceMeters.toInt()}m)"
+            isOwner && member.isLocalUser -> "👑 $firstName (Owner • You)"
+            isOwner -> "👑 $firstName (Owner)"
+            member.isLocalUser -> "$firstName (You)"
+            else -> firstName
+        }
+        val textColor = when {
+            isBreached -> NebulaColors.CriticalCrimson
+            isOwner -> Color(0xFFFFE066)
+            member.isLocalUser -> NebulaColors.AccentCyan
+            else -> NebulaColors.TextPrimary
+        }
+
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
-                .border(
-                    0.5.dp,
-                    if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.CardBorder,
-                    RoundedCornerShape(4.dp)
-                )
-                .padding(horizontal = 4.dp, vertical = 1.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(badgeBackground)
+                .border(0.8.dp, badgeBorderColor, RoundedCornerShape(6.dp))
+                .padding(horizontal = 5.dp, vertical = 2.dp)
         ) {
-            val label = if (isBreached) {
-                "${member.name.split(" ").first()} (+${member.distanceToFenceMeters.toInt()}m)"
-            } else if (member.isLocalUser) {
-                "${member.name.split(" ").first()} (You)"
-            } else {
-                member.name.split(" ").first()
-            }
             Text(
-                text = label,
-                color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary,
+                text = labelText,
+                color = textColor,
                 fontSize = 9.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold
             )
         }
     }

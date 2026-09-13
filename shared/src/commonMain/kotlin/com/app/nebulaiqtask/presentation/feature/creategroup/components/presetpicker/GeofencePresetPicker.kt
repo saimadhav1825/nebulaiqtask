@@ -21,9 +21,9 @@ fun GeofencePresetPicker(
     modifier: Modifier = Modifier
 ) {
     val presets = listOf(
+        "🎯 Test (1m)",
         "🏢 Campus (250m)",
         "🌲 Park (600m)",
-        "🏙️ Event (400m)",
         "🏫 School (150m)"
     )
 

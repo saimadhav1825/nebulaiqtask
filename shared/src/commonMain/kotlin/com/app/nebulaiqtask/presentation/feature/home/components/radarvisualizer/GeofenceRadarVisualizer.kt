@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.GroupMember
 import com.app.nebulaiqtask.domain.model.LocationCoordinate
+import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 import kotlin.math.cos
 import kotlin.math.sin
@@ -202,12 +203,23 @@ fun GeofenceRadarVisualizer(
                         center = Offset(dotX, dotY)
                     )
                 } else {
-                    // Safe dot: Calm emerald glow
-                    drawCircle(
-                        color = NebulaColors.SafeEmerald.copy(alpha = 0.28f),
-                        radius = 11f,
-                        center = Offset(dotX, dotY)
-                    )
+                    val isOwner = member.role == MemberRole.LEADER
+                    if (isOwner) {
+                        // Owner golden aura ring
+                        drawCircle(
+                            color = Color(0xFFFFD700),
+                            radius = 12.5f,
+                            center = Offset(dotX, dotY),
+                            style = Stroke(width = 2.5f)
+                        )
+                    } else {
+                        // Safe dot: Calm emerald glow
+                        drawCircle(
+                            color = NebulaColors.SafeEmerald.copy(alpha = 0.28f),
+                            radius = 11f,
+                            center = Offset(dotX, dotY)
+                        )
+                    }
                     drawCircle(
                         color = Color(member.avatarColorHex),
                         radius = 7f,
