@@ -19,10 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.nebulaiqtask.domain.model.GroupMember
 import com.app.nebulaiqtask.presentation.feature.home.components.breachbanner.BreachAlertBanner
+import com.app.nebulaiqtask.presentation.feature.home.components.permissionbanner.PermissionRationaleBanner
 import com.app.nebulaiqtask.presentation.feature.home.components.quickactions.HomeQuickActions
 import com.app.nebulaiqtask.presentation.feature.home.components.radarvisualizer.GeofenceRadarVisualizer
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
 import com.app.nebulaiqtask.presentation.feature.home.state.HomeState
+import com.app.nebulaiqtask.presentation.feature.home.state.MapViewMode
+import com.app.nebulaiqtask.presentation.platform.GroupMapView
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 
 @Composable
@@ -101,7 +104,18 @@ fun HomeScreenContent(
                     }
                 }
 
-                // 2. Active Group Summary Card
+                // 2. Permission Banner (if any permission is missing)
+                if (!state.hasLocationPermission || !state.hasNotificationPermission) {
+                    item {
+                        PermissionRationaleBanner(
+                            hasLocationPermission = state.hasLocationPermission,
+                            hasNotificationPermission = state.hasNotificationPermission,
+                            onRequestPermissions = { onIntent(HomeIntent.RequestPermissions) }
+                        )
+                    }
+                }
+
+                // 3. Active Group Summary Card
                 state.activeGroup?.let { group ->
                     item {
                         Card(
@@ -143,7 +157,7 @@ fun HomeScreenContent(
                     }
                 }
 
-                // 3. Breach Alert Banner
+                // 4. Breach Alert Banner
                 item {
                     BreachAlertBanner(
                         alert = state.latestAlert,
@@ -151,27 +165,89 @@ fun HomeScreenContent(
                     )
                 }
 
-                // 4. Live Geofence Radar Visualizer Canvas
+                // 5. Live Geofence Visualizer: Interactive Map vs Radar Canvas
                 state.activeGroup?.let { group ->
                     item {
-                        GeofenceRadarVisualizer(
-                            geofence = group.geofence,
-                            members = state.members,
-                            onMemberClicked = { memberId ->
-                                onIntent(HomeIntent.OnMemberClicked(memberId, group.id))
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // View Mode Toggle
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(NebulaColors.SurfaceDark)
+                                    .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(12.dp))
+                                    .padding(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (state.selectedViewMode == MapViewMode.MAP) NebulaColors.PrimaryIndigo else Color.Transparent)
+                                        .clickable { onIntent(HomeIntent.SetViewMode(MapViewMode.MAP)) }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "🗺️ Live Map",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (state.selectedViewMode == MapViewMode.MAP) Color.White else NebulaColors.TextSecondary
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (state.selectedViewMode == MapViewMode.RADAR) NebulaColors.PrimaryIndigo else Color.Transparent)
+                                        .clickable { onIntent(HomeIntent.SetViewMode(MapViewMode.RADAR)) }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "📡 Radar Canvas",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (state.selectedViewMode == MapViewMode.RADAR) Color.White else NebulaColors.TextSecondary
+                                    )
+                                }
                             }
-                        )
+
+                            if (state.selectedViewMode == MapViewMode.MAP) {
+                                GroupMapView(
+                                    geofence = group.geofence,
+                                    members = state.members,
+                                    onMemberClicked = { memberId ->
+                                        onIntent(HomeIntent.OnMemberClicked(memberId, group.id))
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(280.dp)
+                                )
+                            } else {
+                                GeofenceRadarVisualizer(
+                                    geofence = group.geofence,
+                                    members = state.members,
+                                    onMemberClicked = { memberId ->
+                                        onIntent(HomeIntent.OnMemberClicked(memberId, group.id))
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
 
-                // 5. Simulation & Geofence Control Panel
+                // 6. Simulation & Geofence Control Panel
                 item {
                     HomeQuickActions(
                         members = state.members,
                         isSimulationRunning = state.isSimulationRunning,
                         isTrackingActive = state.isTrackingActive,
+                        useRealDeviceGps = state.useRealDeviceGps,
                         onToggleSimulation = { onIntent(HomeIntent.ToggleSimulation) },
                         onToggleTracking = { onIntent(HomeIntent.ToggleTracking) },
+                        onToggleRealDeviceGps = { onIntent(HomeIntent.ToggleRealDeviceGps(it)) },
                         onTriggerBreach = { onIntent(HomeIntent.TriggerBreachForMember(it)) },
                         onReturnToSafety = { onIntent(HomeIntent.ReturnMemberToSafety(it)) },
                         onCreateGroupClicked = { onIntent(HomeIntent.OnCreateGroupClicked) },
@@ -181,7 +257,7 @@ fun HomeScreenContent(
                     )
                 }
 
-                // 6. 10 Members Live Roster Section Header
+                // 7. 10 Members Live Roster Section Header
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -207,10 +283,11 @@ fun HomeScreenContent(
                     }
                 }
 
-                // 7. Member Items
+                // 8. Member Items
                 items(state.members, key = { it.id }) { member ->
                     MemberRowItem(
                         member = member,
+                        deviceBatteryPercent = state.deviceBatteryPercent,
                         onMemberClick = {
                             state.activeGroup?.let { group ->
                                 onIntent(HomeIntent.OnMemberClicked(member.id, group.id))
@@ -226,6 +303,7 @@ fun HomeScreenContent(
 @Composable
 private fun MemberRowItem(
     member: GroupMember,
+    deviceBatteryPercent: Int = 0,
     onMemberClick: () -> Unit
 ) {
     Card(
@@ -283,8 +361,13 @@ private fun MemberRowItem(
                         )
                     }
                 }
+                val batteryDisplay = if (member.isLocalUser && deviceBatteryPercent > 0) {
+                    "🔋 $deviceBatteryPercent% (Hardware)"
+                } else {
+                    "🔋 ${member.batteryPercent}%"
+                }
                 Text(
-                    text = "Role: ${member.role.name.replace("_", " ")} • 🔋 ${member.batteryPercent}%",
+                    text = "Role: ${member.role.name.replace("_", " ")} • $batteryDisplay",
                     fontSize = 11.sp,
                     color = NebulaColors.TextSecondary
                 )

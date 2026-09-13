@@ -8,7 +8,8 @@ import com.app.nebulaiqtask.domain.model.MemberRole
 data class QuickActionsPreviewData(
     val members: List<GroupMember>,
     val isSimulationRunning: Boolean,
-    val isTrackingActive: Boolean
+    val isTrackingActive: Boolean,
+    val useRealDeviceGps: Boolean = false
 )
 
 class HomeQuickActionsPreviewProvider : PreviewParameterProvider<QuickActionsPreviewData> {

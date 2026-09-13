@@ -118,6 +118,13 @@ fun HomeQuickActions(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Member Selector Bar
+            Text(
+                text = "Target Member for Geofence Testing:",
+                fontSize = 12.sp,
+                color = NebulaColors.TextPrimary
+            )
             Spacer(modifier = Modifier.height(6.dp))
 
             Box(
