@@ -24,8 +24,11 @@ import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
+import org.maplibre.compose.map.AndroidRenderMode
+import org.maplibre.compose.map.MapUiOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
+import org.maplibre.compose.map.renderMode
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Position
 
@@ -110,6 +113,12 @@ actual fun GroupMapView(
 
     val breachedMembersCount = members.count { !it.isInsideGeofence }
 
+    val uiOptions = remember {
+        MapUiOptions {
+            renderMode = AndroidRenderMode.Texture
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -122,6 +131,7 @@ actual fun GroupMapView(
             modifier = Modifier.fillMaxSize(),
             state = mapState,
             interactions = interactions,
+            uiOptions = uiOptions,
             overlay = {
                 // 1. Geofence Perimeter Radius Circle
                 val metersPerDp = mapState.viewport?.metersPerDpAtTarget ?: 1.0
