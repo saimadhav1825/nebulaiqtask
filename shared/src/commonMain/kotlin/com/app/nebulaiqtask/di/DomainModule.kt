@@ -24,4 +24,10 @@ val domainModule = module {
     factory { GetCurrentUserUseCase(get()) }
     factory { InitializeUserSessionUseCase(get()) }
     factory { UpdateDisplayNameUseCase(get()) }
+    factory { GetActiveGroupIdUseCase(get()) }
+    factory { SaveActiveGroupIdUseCase(get()) }
+
+    // Alert & Notification Use Cases
+    factory { GetDeliveredNotificationsUseCase(get()) }
+    factory { ClearActiveAlertsUseCase(get()) }
 }

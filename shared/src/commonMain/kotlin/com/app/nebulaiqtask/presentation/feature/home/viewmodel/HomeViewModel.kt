@@ -3,7 +3,6 @@ package com.app.nebulaiqtask.presentation.feature.home.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.nebulaiqtask.domain.repository.UserRepository
 import com.app.nebulaiqtask.domain.usecase.*
 import com.app.nebulaiqtask.presentation.feature.home.effect.HomeEffect
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
@@ -20,7 +19,8 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val savedStateHandle: SavedStateHandle,
-    private val userRepository: UserRepository,
+    private val getActiveGroupIdUseCase: GetActiveGroupIdUseCase,
+    private val saveActiveGroupIdUseCase: SaveActiveGroupIdUseCase,
     private val getTrackingGroupUseCase: GetTrackingGroupUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val checkGeofenceBreachUseCase: CheckGeofenceBreachUseCase,
@@ -97,7 +97,7 @@ class HomeViewModel(
             if (currentId != null) {
                 observeGroupData()
             } else {
-                val savedId = userRepository.getActiveGroupId()
+                val savedId = getActiveGroupIdUseCase()
                 if (!savedId.isNullOrBlank()) {
                     activeGroupId = savedId
                     _state.update { it.copy(isLoading = true) }
@@ -272,7 +272,7 @@ class HomeViewModel(
             }
             is HomeIntent.SwitchToGroup -> {
                 activeGroupId = intent.groupId
-                viewModelScope.launch { userRepository.saveActiveGroupId(intent.groupId) }
+                viewModelScope.launch { saveActiveGroupIdUseCase(intent.groupId) }
                 _state.update { it.copy(isLoading = true) }
                 observeGroupData()
             }
@@ -333,7 +333,7 @@ class HomeViewModel(
 
             result.onSuccess { joinedGroup ->
                 activeGroupId = joinedGroup.id
-                viewModelScope.launch { userRepository.saveActiveGroupId(joinedGroup.id) }
+                viewModelScope.launch { saveActiveGroupIdUseCase(joinedGroup.id) }
                 _state.update {
                     it.copy(
                         isJoinGroupDialogVisible = false,
