@@ -45,7 +45,7 @@ class GeofenceBreachTest {
             avatarColorHex = 0xFFE11D48,
             initials = "LB",
             currentLocation = LocationCoordinate(37.7800, -122.4194, 5f, 1726218000000L),
-            isInsideGeofence = false
+            isInsideGeofence = true // was previously inside
         )
 
         val result = checkUseCase(
@@ -60,6 +60,112 @@ class GeofenceBreachTest {
         assertNotNull(result.generatedAlert)
         assertEquals("Lucas Bennett", result.generatedAlert?.memberName)
         assertEquals(9, result.generatedAlert?.notifiedMembersCount)
+    }
+
+    @Test
+    fun testInitialJoinWhileOutsideDoesNotGenerateAlert() {
+        val checkUseCase = CheckGeofenceBreachUseCase()
+        val outsideJoiningMember = GroupMember(
+            id = "m11",
+            name = "Sarah Connor",
+            role = MemberRole.MEMBER,
+            avatarColorHex = 0xFF3B82F6,
+            initials = "SC",
+            currentLocation = LocationCoordinate(37.7850, -122.4194, 5f, 1726218000000L),
+            isInsideGeofence = false
+        )
+
+        // Case 1: Initial join or sync flag is passed
+        val resultWithFlag = checkUseCase(
+            groupId = "group_test",
+            member = outsideJoiningMember,
+            fence = fence,
+            totalGroupMembersCount = 10,
+            isInitialJoinOrSync = true
+        )
+        assertFalse(resultWithFlag.isInside)
+        assertNull(resultWithFlag.generatedAlert, "Initial join outside must NOT generate breach alert")
+
+        // Case 2: Member already outside without flag
+        val freshUseCase = CheckGeofenceBreachUseCase()
+        val resultWithoutFlag = freshUseCase(
+            groupId = "group_test",
+            member = outsideJoiningMember,
+            fence = fence,
+            totalGroupMembersCount = 10
+        )
+        assertNull(resultWithoutFlag.generatedAlert, "User already outside must NOT generate breach alert")
+    }
+
+    @Test
+    fun testRepeatedCheckWhileOutsideDoesNotRepeatAlert() {
+        val checkUseCase = CheckGeofenceBreachUseCase()
+        val member = GroupMember(
+            id = "m12",
+            name = "John Doe",
+            role = MemberRole.MEMBER,
+            avatarColorHex = 0xFF10B981,
+            initials = "JD",
+            currentLocation = LocationCoordinate(37.7800, -122.4194, 5f, 1726218000000L),
+            isInsideGeofence = true // was inside
+        )
+
+        // 1st tick: exits fence -> Alert generated
+        val firstResult = checkUseCase(
+            groupId = "group_test",
+            member = member,
+            fence = fence
+        )
+        assertNotNull(firstResult.generatedAlert, "First exit must generate alert")
+
+        // 2nd tick: still outside -> NO duplicate alert
+        val updatedMember = member.copy(
+            isInsideGeofence = false,
+            currentLocation = LocationCoordinate(37.7805, -122.4194, 5f, 1726218005000L)
+        )
+        val secondResult = checkUseCase(
+            groupId = "group_test",
+            member = updatedMember,
+            fence = fence
+        )
+        assertNull(secondResult.generatedAlert, "Second tick while outside must NOT repeat alert")
+    }
+
+    @Test
+    fun testReturnToGeofenceDoesNotPushAlertAndAllowsReAlertOnSubsequentExit() {
+        val checkUseCase = CheckGeofenceBreachUseCase()
+        val member = GroupMember(
+            id = "m13",
+            name = "Jane Doe",
+            role = MemberRole.MEMBER,
+            avatarColorHex = 0xFF8B5CF6,
+            initials = "JD",
+            currentLocation = LocationCoordinate(37.7800, -122.4194, 5f, 1726218000000L),
+            isInsideGeofence = true
+        )
+
+        // 1. Exit fence -> alerts once
+        val exitResult = checkUseCase("group_test", member, fence)
+        assertNotNull(exitResult.generatedAlert)
+
+        // 2. Return inside fence -> TRANSITION_ENTER, NO breach alert
+        val returnedMember = member.copy(
+            isInsideGeofence = false,
+            currentLocation = LocationCoordinate(37.7749, -122.4194, 5f, 1726218010000L) // center
+        )
+        val returnResult = checkUseCase("group_test", returnedMember, fence)
+        assertTrue(returnResult.isInside)
+        assertNull(returnResult.generatedAlert, "Returning to geofence must NOT push an alert")
+        assertEquals(com.app.nebulaiqtask.domain.usecase.GeofenceTransition.TRANSITION_ENTER, returnResult.transition)
+
+        // 3. Exit fence AGAIN -> alerts again!
+        val reExitMember = member.copy(
+            isInsideGeofence = true, // now inside again
+            currentLocation = LocationCoordinate(37.7810, -122.4194, 5f, 1726218020000L) // stepped outside again
+        )
+        val reExitResult = checkUseCase("group_test", reExitMember, fence)
+        assertFalse(reExitResult.isInside)
+        assertNotNull(reExitResult.generatedAlert, "Exiting again must trigger breach alert once more")
     }
 
     @Test
