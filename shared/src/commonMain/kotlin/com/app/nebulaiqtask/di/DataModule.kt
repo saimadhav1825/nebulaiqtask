@@ -5,7 +5,6 @@ import com.app.nebulaiqtask.data.datasource.LocalGroupDataSource
 import com.app.nebulaiqtask.data.datasource.UserPreferencesDataSource
 import com.app.nebulaiqtask.data.mapper.*
 import com.app.nebulaiqtask.data.repository.*
-import com.app.nebulaiqtask.data.session.UserSessionManager
 import com.app.nebulaiqtask.domain.repository.*
 import org.koin.dsl.module
 
@@ -25,7 +24,6 @@ val dataModule = module {
 
     // User Repository backed by DataStore and PlatformAuthManager
     single<UserRepository> { UserRepositoryImpl(get(), get()) }
-    single { UserSessionManager(get()) }
 
     // Domain Repositories
     single<TrackingGroupRepository> { TrackingGroupRepositoryImpl(get(), get(), get(), get(), get()) }
