@@ -12,4 +12,6 @@ interface UserRepository {
     suspend fun initializeSession(): UserProfile
     suspend fun updateDisplayName(name: String)
     suspend fun updateRole(role: MemberRole)
+    suspend fun getActiveGroupId(): String?
+    suspend fun saveActiveGroupId(groupId: String?)
 }

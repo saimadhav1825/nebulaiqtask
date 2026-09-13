@@ -26,6 +26,7 @@ class UserPreferencesDataSource(
         private val KEY_DISPLAY_NAME = stringPreferencesKey("display_name")
         private val KEY_ROLE = stringPreferencesKey("role")
         private val KEY_AVATAR_COLOR = longPreferencesKey("avatar_color")
+        private val KEY_ACTIVE_GROUP_ID = stringPreferencesKey("active_group_id")
         private const val DEFAULT_COLOR = 0xFF6366F1L
     }
 
@@ -75,6 +76,20 @@ class UserPreferencesDataSource(
             prefs[KEY_DISPLAY_NAME] = displayName.trim()
             prefs[KEY_ROLE] = role
             prefs[KEY_AVATAR_COLOR] = avatarColorHex
+        }
+    }
+
+    suspend fun getActiveGroupId(): String? {
+        return dataStore.data.first()[KEY_ACTIVE_GROUP_ID]
+    }
+
+    suspend fun saveActiveGroupId(groupId: String?) {
+        dataStore.edit { prefs ->
+            if (groupId != null) {
+                prefs[KEY_ACTIVE_GROUP_ID] = groupId
+            } else {
+                prefs.remove(KEY_ACTIVE_GROUP_ID)
+            }
         }
     }
 

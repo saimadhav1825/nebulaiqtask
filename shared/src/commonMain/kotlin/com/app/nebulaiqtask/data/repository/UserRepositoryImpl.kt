@@ -121,6 +121,14 @@ class UserRepositoryImpl(
         _currentUserProfile.value = _currentUserProfile.value.copy(role = role)
     }
 
+    override suspend fun getActiveGroupId(): String? {
+        return preferencesDataSource.getActiveGroupId()
+    }
+
+    override suspend fun saveActiveGroupId(groupId: String?) {
+        preferencesDataSource.saveActiveGroupId(groupId)
+    }
+
     private fun getColorForId(id: String): Long {
         if (id.isBlank()) return 0xFF6366F1L
         val index = ((id.hashCode() % colors.size) + colors.size) % colors.size
