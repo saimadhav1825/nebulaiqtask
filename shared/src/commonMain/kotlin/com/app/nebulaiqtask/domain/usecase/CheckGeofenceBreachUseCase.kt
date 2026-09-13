@@ -4,6 +4,7 @@ import com.app.nebulaiqtask.domain.model.AlertSeverity
 import com.app.nebulaiqtask.domain.model.BreachAlert
 import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.GroupMember
+import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.domain.util.GeoDistanceCalculator
 
 enum class GeofenceTransition {
@@ -66,8 +67,11 @@ class CheckGeofenceBreachUseCase {
             }
         }
 
+        val isOwner = member.role == MemberRole.LEADER
+
         // Only generate new alert on genuine TRANSITION_EXIT when alertOnExit is enabled
-        val alert = if (transition == GeofenceTransition.TRANSITION_EXIT && fence.alertOnExit) {
+        // AND the member is NOT the owner (notifications only send if joined/other members go outside, not owner)
+        val alert = if (transition == GeofenceTransition.TRANSITION_EXIT && fence.alertOnExit && !isOwner) {
             BreachAlert(
                 id = "alert_${member.id}_${member.currentLocation.timestamp}",
                 groupId = groupId,

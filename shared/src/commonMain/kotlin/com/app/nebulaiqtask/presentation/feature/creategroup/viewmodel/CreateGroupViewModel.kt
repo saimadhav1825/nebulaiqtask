@@ -24,8 +24,8 @@ class CreateGroupViewModel(
     private val _state = MutableStateFlow(
         CreateGroupState(
             groupName = savedStateHandle["SAVED_GROUP_NAME"] ?: "",
-            geofenceName = savedStateHandle["SAVED_GEOFENCE_NAME"] ?: "Test 1m Geofence",
-            radiusMeters = savedStateHandle["SAVED_RADIUS"] ?: 1.0
+            geofenceName = savedStateHandle["SAVED_GEOFENCE_NAME"] ?: "Test 25m Geofence",
+            radiusMeters = savedStateHandle["SAVED_RADIUS"] ?: 25.0
         )
     )
     val state: StateFlow<CreateGroupState> = _state.asStateFlow()
@@ -64,7 +64,7 @@ class CreateGroupViewModel(
             }
             is CreateGroupIntent.OnPresetSelected -> {
                 val presets = listOf(
-                    Triple("1m Test Perimeter", 1.0, 37.7749 to -122.4194),
+                    Triple("25m Test Perimeter", 25.0, 37.7749 to -122.4194),
                     Triple("Corporate Campus", 250.0, 37.7749 to -122.4194),
                     Triple("National Park Camp", 600.0, 37.7690 to -122.4467),
                     Triple("High-School Perimeter", 150.0, 37.7550 to -122.4200)

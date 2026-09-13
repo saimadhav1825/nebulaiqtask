@@ -51,7 +51,7 @@ fun GeofenceRadiusSlider(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("1m (Testing)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
+            Text("25m (Default)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
             Text("500m (Campus)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
             Text("2000m (District)", fontSize = 10.sp, color = NebulaColors.TextSecondary)
         }
