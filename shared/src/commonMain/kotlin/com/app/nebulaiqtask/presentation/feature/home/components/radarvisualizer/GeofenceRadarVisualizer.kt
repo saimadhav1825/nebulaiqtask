@@ -79,9 +79,10 @@ fun GeofenceRadarVisualizer(
                         val metersToLat = 1.0 / 111000.0
                         val metersToLon = 1.0 / (111000.0 * cos(centerLat * (kotlin.math.PI / 180.0)))
 
-                        for (member in members) {
-                            val dLat = (member.currentLocation.latitude - centerLat) / metersToLat
-                            val dLon = (member.currentLocation.longitude - centerLon) / metersToLon
+                        val dispersedMembers = disperseOverlappingMembers(members)
+                        for ((member, displayLoc) in dispersedMembers) {
+                            val dLat = (displayLoc.latitude - centerLat) / metersToLat
+                            val dLon = (displayLoc.longitude - centerLon) / metersToLon
                             val scale = radiusPx / geofence.radiusMeters.toFloat()
                             val dotX = centerX + (dLon.toFloat() * scale)
                             val dotY = centerY - (dLat.toFloat() * scale)
@@ -176,9 +177,10 @@ fun GeofenceRadarVisualizer(
             val metersToLon = 1.0 / (111000.0 * cos(centerLat * (kotlin.math.PI / 180.0)))
             val scale = maxRadarRadius / geofence.radiusMeters.toFloat()
 
-            for (member in members) {
-                val dLat = (member.currentLocation.latitude - centerLat) / metersToLat
-                val dLon = (member.currentLocation.longitude - centerLon) / metersToLon
+            val dispersedMembers = disperseOverlappingMembers(members)
+            for ((member, displayLoc) in dispersedMembers) {
+                val dLat = (displayLoc.latitude - centerLat) / metersToLat
+                val dLon = (displayLoc.longitude - centerLon) / metersToLon
                 val dotX = centerX + (dLon.toFloat() * scale)
                 val dotY = centerY - (dLat.toFloat() * scale)
 
@@ -260,4 +262,49 @@ fun GeofenceRadarVisualizer(
             }
         }
     }
+}
+
+private fun disperseOverlappingMembers(members: List<GroupMember>): List<Pair<GroupMember, LocationCoordinate>> {
+    if (members.isEmpty()) return emptyList()
+
+    val result = mutableListOf<Pair<GroupMember, LocationCoordinate>>()
+    val clusters = mutableListOf<MutableList<GroupMember>>()
+
+    for (member in members) {
+        val cluster = clusters.find { cl ->
+            val first = cl.first().currentLocation
+            val dLat = member.currentLocation.latitude - first.latitude
+            val dLon = member.currentLocation.longitude - first.longitude
+            (dLat * dLat + dLon * dLon) < 0.00000003
+        }
+        if (cluster != null) {
+            cluster.add(member)
+        } else {
+            clusters.add(mutableListOf(member))
+        }
+    }
+
+    for (cluster in clusters) {
+        if (cluster.size == 1) {
+            result.add(cluster[0] to cluster[0].currentLocation)
+        } else {
+            val count = cluster.size
+            for (i in cluster.indices) {
+                val member = cluster[i]
+                val angle = (2.0 * kotlin.math.PI * i / count)
+                val baseLat = member.currentLocation.latitude
+                val baseLon = member.currentLocation.longitude
+                val radiusMeters = 20.0
+                val latOffset = (radiusMeters / 111000.0) * kotlin.math.cos(angle)
+                val lonOffset = (radiusMeters / (111000.0 * kotlin.math.cos(baseLat * kotlin.math.PI / 180.0))) * kotlin.math.sin(angle)
+                val dispersed = member.currentLocation.copy(
+                    latitude = baseLat + latOffset,
+                    longitude = baseLon + lonOffset
+                )
+                result.add(member to dispersed)
+            }
+        }
+    }
+
+    return result
 }
