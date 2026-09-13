@@ -25,11 +25,11 @@ fun AlertIncidentCard(
             .fillMaxWidth()
             .border(
                 1.dp,
-                if (!alert.isAcknowledged) NebulaColors.CriticalCrimson else NebulaColors.CardBorder,
+                if (!alert.isAcknowledged) Color(0xFFFCA5A5) else NebulaColors.CardBorder,
                 RoundedCornerShape(14.dp)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (!alert.isAcknowledged) NebulaColors.CriticalCrimsonContainer.copy(alpha = 0.35f) else NebulaColors.SurfaceDark
+            containerColor = if (!alert.isAcknowledged) Color(0xFFFEF2F2) else NebulaColors.SurfaceDark
         ),
         shape = RoundedCornerShape(14.dp)
     ) {
@@ -75,7 +75,7 @@ fun AlertIncidentCard(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Button(
                         onClick = { onAcknowledge(alert.id) },
-                        colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.CardElevated),
+                        colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
                     ) {

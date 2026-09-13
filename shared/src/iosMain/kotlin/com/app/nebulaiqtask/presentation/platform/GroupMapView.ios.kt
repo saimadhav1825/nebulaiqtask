@@ -21,9 +21,9 @@ actual fun GroupMapView(
     onMapCenterChange: ((Double, Double) -> Unit)?
 ) {
     Box(
-        modifier = modifier.fillMaxWidth().height(300.dp).background(Color(0xFF1E293B)),
+        modifier = modifier.fillMaxWidth().height(300.dp).background(com.app.nebulaiqtask.presentation.theme.NebulaColors.SurfaceDark),
         contentAlignment = Alignment.Center
     ) {
-        Text("Map View (iOS Preview)", color = Color.White)
+        Text("Map View (iOS Preview)", color = com.app.nebulaiqtask.presentation.theme.NebulaColors.TextPrimary)
     }
 }
