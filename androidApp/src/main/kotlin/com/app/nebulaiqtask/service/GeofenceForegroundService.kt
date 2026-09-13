@@ -106,15 +106,8 @@ class GeofenceForegroundService : Service(), KoinComponent {
                         distanceToFence = check.distanceOutsideMeters
                     )
 
-                    val localAlert = check.generatedAlert
-                    if (localAlert != null) {
-                        sendBreachNotificationUseCase(
-                            alert = localAlert,
-                            groupName = currentGroup.name,
-                            recipientCount = currentGroup.members.size - 1
-                        )
-                        updateNotification("🚨 YOU EXITED ${currentGroup.geofence.name} (+${check.distanceOutsideMeters.toInt()}m)!")
-                    } else if (check.transition == GeofenceTransition.TRANSITION_ENTER) {
+                    // The member walking outside does NOT receive notification on their device
+                    if (check.transition == GeofenceTransition.TRANSITION_ENTER) {
                         sendBreachNotificationUseCase.onMemberReturnedToSafety(
                             groupId = currentGroup.id,
                             memberId = localMember.id,
@@ -127,8 +120,12 @@ class GeofenceForegroundService : Service(), KoinComponent {
 
         // 2. Background observation of other group members from Firebase
         launch {
+            val myUserId = userRepository.currentUserProfile.value.userId
             trackingGroupRepository.getTrackingGroupFlow(groupId).collectLatest { group ->
                 if (group != null && group.members.isNotEmpty()) {
+                    val isCurrentUserOwner = group.members.any {
+                        (it.id == myUserId || it.isLocalUser) && it.role == MemberRole.LEADER
+                    }
                     var breachCount = 0
                     for (member in group.members) {
                         val result = checkGeofenceBreachUseCase(
@@ -139,13 +136,15 @@ class GeofenceForegroundService : Service(), KoinComponent {
                         )
 
                         val memberAlert = result.generatedAlert
-                        if (memberAlert != null) {
+                        // ONLY the group owner receives breach notifications on their device
+                        if (memberAlert != null && isCurrentUserOwner) {
                             sendBreachNotificationUseCase(
                                 alert = memberAlert,
                                 groupName = group.name,
-                                recipientCount = group.members.size - 1
+                                recipientCount = group.members.size - 1,
+                                isLocalUserOwner = true
                             )
-                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER) {
+                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER && isCurrentUserOwner) {
                             sendBreachNotificationUseCase.onMemberReturnedToSafety(
                                 groupId = groupId,
                                 memberId = member.id,
@@ -157,10 +156,14 @@ class GeofenceForegroundService : Service(), KoinComponent {
                         }
                     }
 
-                    if (breachCount > 0) {
-                        updateNotification("🚨 $breachCount member(s) outside ${group.geofence.name}!")
+                    if (isCurrentUserOwner) {
+                        if (breachCount > 0) {
+                            updateNotification("🚨 $breachCount member(s) outside ${group.geofence.name}!")
+                        } else {
+                            updateNotification("🛡️ All ${group.members.size} members inside ${group.geofence.name}")
+                        }
                     } else {
-                        updateNotification("🛡️ All ${group.members.size} members inside ${group.geofence.name}")
+                        updateNotification("🛡️ Tracking active in ${group.geofence.name}")
                     }
                 }
             }

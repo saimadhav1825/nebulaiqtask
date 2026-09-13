@@ -3,6 +3,7 @@ package com.app.nebulaiqtask.presentation.feature.home.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.domain.usecase.*
 import com.app.nebulaiqtask.presentation.feature.home.effect.HomeEffect
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
@@ -146,6 +147,11 @@ class HomeViewModel(
         membersObservationJob = viewModelScope.launch {
             getGroupMembersUseCase(groupId).collectLatest { membersList ->
                 val group = _state.value.activeGroup
+                val myUserId = _state.value.currentUserId
+                val isCurrentUserOwner = membersList.any {
+                    (it.id == myUserId || it.isLocalUser) && it.role == MemberRole.LEADER
+                }
+
                 if (group != null && membersList.isNotEmpty()) {
                     for (member in membersList) {
                         val result = checkGeofenceBreachUseCase(
@@ -155,13 +161,15 @@ class HomeViewModel(
                             totalGroupMembersCount = membersList.size
                         )
 
-                        if (result.generatedAlert != null) {
+                        // ONLY the group owner receives breach notifications on their device
+                        if (result.generatedAlert != null && isCurrentUserOwner) {
                             sendBreachNotificationUseCase(
                                 alert = result.generatedAlert,
                                 groupName = group.name,
-                                recipientCount = membersList.size - 1
+                                recipientCount = membersList.size - 1,
+                                isLocalUserOwner = true
                             )
-                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER) {
+                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER && isCurrentUserOwner) {
                             sendBreachNotificationUseCase.onMemberReturnedToSafety(
                                 groupId = groupId,
                                 memberId = member.id,
@@ -405,13 +413,7 @@ class HomeViewModel(
                             distanceToFence = check.distanceOutsideMeters
                         )
 
-                        if (check.generatedAlert != null) {
-                            sendBreachNotificationUseCase(
-                                alert = check.generatedAlert,
-                                groupName = group.name,
-                                recipientCount = _state.value.members.size - 1
-                            )
-                        } else if (check.transition == GeofenceTransition.TRANSITION_ENTER) {
+                        if (check.transition == GeofenceTransition.TRANSITION_ENTER) {
                             sendBreachNotificationUseCase.onMemberReturnedToSafety(
                                 groupId = group.id,
                                 memberId = localMember.id,

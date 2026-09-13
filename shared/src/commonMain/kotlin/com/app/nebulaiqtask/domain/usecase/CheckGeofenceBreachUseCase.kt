@@ -38,21 +38,32 @@ class CheckGeofenceBreachUseCase {
 
         val isAlreadyAlerted = key in activeBreachedMembers
 
+        // Hysteresis buffer to prevent GPS jitter oscillation near fence boundary
+        val hysteresisBufferMeters = (fence.radiusMeters * 0.10).coerceIn(2.0, 5.0)
+        val isSafelyInside = GeoDistanceCalculator.calculateDistanceMeters(
+            startLat = member.currentLocation.latitude,
+            startLon = member.currentLocation.longitude,
+            endLat = fence.center.latitude,
+            endLon = fence.center.longitude
+        ) <= (fence.radiusMeters - hysteresisBufferMeters)
+
         val transition = when {
-            // 1. Member is safely inside the geofence
-            isNowInside -> {
+            // 1. Member was outside, now returned safely inside past the hysteresis margin
+            isSafelyInside -> {
                 if (isAlreadyAlerted || !member.isInsideGeofence) {
-                    // Transition: was outside, now returned safely inside
                     activeBreachedMembers.remove(key)
                     GeofenceTransition.TRANSITION_ENTER
                 } else {
                     GeofenceTransition.NONE
                 }
             }
-            // 2. Member is outside the geofence
+            // 2. Member is hovering near fence edge within buffer: preserve current state (no jitter flipping)
+            isNowInside -> {
+                GeofenceTransition.NONE
+            }
+            // 3. Member is outside the geofence
             else -> {
                 if (isInitialJoinOrSync) {
-                    // Initial join or initial sync while already outside: mark as breached but DO NOT fire notification
                     activeBreachedMembers.add(key)
                     GeofenceTransition.NONE
                 } else if (!isAlreadyAlerted && member.isInsideGeofence) {
