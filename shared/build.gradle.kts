@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.maplibre.android.sdk)
             implementation(libs.maplibre.compose.runtime.opengl)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -73,6 +74,11 @@ kotlin {
 
             // MapLibre Compose Multiplatform
             implementation(libs.maplibre.compose)
+
+            // Ktor Networking for Firebase Realtime Sync
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

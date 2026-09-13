@@ -7,11 +7,13 @@ class UpdateMemberLocationUseCase(
     private val memberRepository: MemberRepository
 ) {
     suspend operator fun invoke(
+        groupId: String,
         memberId: String,
         location: LocationCoordinate,
+        battery: Int = 100,
         isInside: Boolean,
         distanceToFence: Double
     ) {
-        memberRepository.updateMemberLocation(memberId, location, isInside, distanceToFence)
+        memberRepository.updateMemberLocation(groupId, memberId, location, battery, isInside, distanceToFence)
     }
 }

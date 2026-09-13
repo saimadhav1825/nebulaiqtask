@@ -6,9 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class LocalGroupDataSource(
-    private val simulatedMembersDataSource: SimulatedMembersDataSource
-) {
+class LocalGroupDataSource {
     private val _groups = MutableStateFlow<Map<String, GroupDto>>(emptyMap())
     val groups: StateFlow<Map<String, GroupDto>> = _groups.asStateFlow()
 
@@ -20,47 +18,6 @@ class LocalGroupDataSource(
 
     private val _userLiveLocation = MutableStateFlow<LocationDto?>(null)
     val userLiveLocation: StateFlow<LocationDto?> = _userLiveLocation.asStateFlow()
-
-    private var simulationTickCount = 0L
-
-    init {
-        seedDefaultGroup()
-    }
-
-    private fun seedDefaultGroup() {
-        val defaultCenterLat = 37.7749
-        val defaultCenterLon = -122.4194
-        val defaultRadius = 300.0 // 300 meters
-
-        val defaultGeofence = GeofenceZoneDto(
-            id = "fence_campus_01",
-            name = "Mission Bay Campus Safety Zone",
-            center = LocationDto(defaultCenterLat, defaultCenterLon, 3.5f, 1726218000000L),
-            radiusMeters = defaultRadius,
-            description = "Central campus perimeter & geofenced safety boundary",
-            alertOnExit = true,
-            alertOnEntry = false,
-            createdAt = 1726218000000L
-        )
-
-        val members = simulatedMembersDataSource.createInitial10Members(
-            centerLat = defaultCenterLat,
-            centerLon = defaultCenterLon,
-            radiusMeters = defaultRadius
-        )
-
-        val defaultGroup = GroupDto(
-            id = "group_team_alpha",
-            name = "Alpha Field Operations (10 Members)",
-            geofence = defaultGeofence,
-            members = members,
-            activeAlertsCount = 0,
-            isTrackingActive = true,
-            createdAt = 1726218000000L
-        )
-
-        _groups.value = mapOf(defaultGroup.id to defaultGroup)
-    }
 
     fun getGroup(groupId: String): GroupDto? = _groups.value[groupId]
 
@@ -76,68 +33,44 @@ class LocalGroupDataSource(
     }
 
     fun updateSingleMember(
+        groupId: String,
         memberId: String,
         location: LocationDto,
+        battery: Int,
         isInside: Boolean,
         distanceToFence: Double
     ) {
         _groups.update { current ->
-            current.mapValues { (_, group) ->
-                val updatedMembers = group.members.map { m ->
-                    if (m.id == memberId) {
-                        m.copy(
-                            currentLocation = location,
-                            isInsideGeofence = isInside,
-                            distanceToFenceMeters = distanceToFence,
-                            lastUpdatedMillis = location.timestamp
-                        )
-                    } else m
-                }
-                group.copy(members = updatedMembers)
+            val group = current[groupId] ?: return@update current
+            val updatedMembers = group.members.map { m ->
+                if (m.id == memberId) {
+                    m.copy(
+                        currentLocation = location,
+                        batteryPercent = battery,
+                        isInsideGeofence = isInside,
+                        distanceToFenceMeters = distanceToFence,
+                        lastUpdatedMillis = location.timestamp
+                    )
+                } else m
             }
+            current + (groupId to group.copy(members = updatedMembers))
         }
     }
 
-    fun simulateTick(groupId: String): List<MemberDto> {
-        simulationTickCount++
-        val group = _groups.value[groupId] ?: return emptyList()
-        val updated = simulatedMembersDataSource.stepSimulation(
-            members = group.members,
-            centerLat = group.geofence.center.latitude,
-            centerLon = group.geofence.center.longitude,
-            radiusMeters = group.geofence.radiusMeters,
-            tickCount = simulationTickCount
-        )
-        updateMembers(groupId, updated)
-        return updated
+    fun addMember(groupId: String, member: MemberDto) {
+        _groups.update { current ->
+            val group = current[groupId] ?: return@update current
+            val filtered = group.members.filterNot { it.id == member.id }
+            current + (groupId to group.copy(members = filtered + member))
+        }
     }
 
-    fun triggerMemberExit(groupId: String, memberId: String): MemberDto? {
-        val group = _groups.value[groupId] ?: return null
-        val target = group.members.find { it.id == memberId } ?: return null
-        val breached = simulatedMembersDataSource.forceBreachMember(
-            member = target,
-            centerLat = group.geofence.center.latitude,
-            centerLon = group.geofence.center.longitude,
-            radiusMeters = group.geofence.radiusMeters
-        )
-        val updatedMembers = group.members.map { if (it.id == memberId) breached else it }
-        updateMembers(groupId, updatedMembers)
-        return breached
-    }
-
-    fun triggerMemberReturn(groupId: String, memberId: String): MemberDto? {
-        val group = _groups.value[groupId] ?: return null
-        val target = group.members.find { it.id == memberId } ?: return null
-        val safe = simulatedMembersDataSource.returnMemberToSafety(
-            member = target,
-            centerLat = group.geofence.center.latitude,
-            centerLon = group.geofence.center.longitude,
-            radiusMeters = group.geofence.radiusMeters
-        )
-        val updatedMembers = group.members.map { if (it.id == memberId) safe else it }
-        updateMembers(groupId, updatedMembers)
-        return safe
+    fun removeMember(groupId: String, memberId: String) {
+        _groups.update { current ->
+            val group = current[groupId] ?: return@update current
+            val filtered = group.members.filterNot { it.id == memberId }
+            current + (groupId to group.copy(members = filtered))
+        }
     }
 
     fun addAlert(alert: BreachAlertDto) {

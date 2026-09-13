@@ -7,6 +7,6 @@ class TriggerMemberReturnUseCase(
     private val repository: MemberRepository
 ) {
     suspend operator fun invoke(groupId: String, memberId: String): GroupMember? {
-        return repository.triggerMemberReturn(groupId, memberId)
+        return repository.returnMemberToSafety(groupId, memberId)
     }
 }
