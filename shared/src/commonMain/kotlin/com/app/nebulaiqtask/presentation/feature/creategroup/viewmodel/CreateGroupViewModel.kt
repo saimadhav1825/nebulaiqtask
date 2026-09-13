@@ -12,6 +12,7 @@ import com.app.nebulaiqtask.presentation.feature.creategroup.state.CreateGroupSt
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 class CreateGroupViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -20,8 +21,8 @@ class CreateGroupViewModel(
 
     private val _state = MutableStateFlow(
         CreateGroupState(
-            groupName = savedStateHandle["SAVED_GROUP_NAME"] ?: "Field Rescue Team (10)",
-            geofenceName = savedStateHandle["SAVED_GEOFENCE_NAME"] ?: "Sector 4 Safe Zone",
+            groupName = savedStateHandle["SAVED_GROUP_NAME"] ?: "",
+            geofenceName = savedStateHandle["SAVED_GEOFENCE_NAME"] ?: "",
             radiusMeters = savedStateHandle["SAVED_RADIUS"] ?: 400.0
         )
     )
@@ -89,7 +90,7 @@ class CreateGroupViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isSubmitting = true) }
             try {
-                val now = 1726218000000L + (0..10000).random()
+                val now = Clock.System.now().toEpochMilliseconds()
                 val geofence = GeofenceZone(
                     id = "fence_${now}",
                     name = s.geofenceName,

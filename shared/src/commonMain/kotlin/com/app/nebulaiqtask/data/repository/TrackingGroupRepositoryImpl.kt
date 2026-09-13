@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlin.random.Random
 
 class TrackingGroupRepositoryImpl(
@@ -76,7 +77,7 @@ class TrackingGroupRepositoryImpl(
     }
 
     override suspend fun createTrackingGroup(name: String, geofence: GeofenceZone): TrackingGroup {
-        val now = 1726218000000L + (0..100000).random()
+        val now = Clock.System.now().toEpochMilliseconds()
         val randomDigits = Random.nextInt(1000, 9999)
         val inviteCode = "NEB-$randomDigits"
         val geofenceDto = geofenceMapper.toDto(geofence)
@@ -122,7 +123,7 @@ class TrackingGroupRepositoryImpl(
 
     override suspend fun joinTrackingGroup(groupCode: String): Result<TrackingGroup> {
         val sanitizedCode = groupCode.trim().uppercase()
-        val now = 1726218000000L + (0..100000).random()
+        val now = Clock.System.now().toEpochMilliseconds()
         val profile = userSessionManager.currentProfile.value
         val initials = profile.displayName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
 

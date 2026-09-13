@@ -11,6 +11,7 @@ import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.domain.repository.MemberRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
 import kotlin.random.Random
 
 class MemberRepositoryImpl(
@@ -81,7 +82,7 @@ class MemberRepositoryImpl(
         val memberId = "usr_$randomDigits"
         val colors = listOf(0xFF6366F1, 0xFF06B6D4, 0xFF10B981, 0xFFF59E0B, 0xFFEC4899, 0xFF8B5CF6)
         val color = colors[Random.nextInt(colors.size)]
-        val now = 1726218000000L + (0..100000).random()
+        val now = Clock.System.now().toEpochMilliseconds()
         val memberName = name.ifBlank { "Member $randomDigits" }
         val initials = memberName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
 
@@ -92,7 +93,7 @@ class MemberRepositoryImpl(
             avatarColorHex = color,
             initials = initials,
             currentLocation = group.geofence.center,
-            batteryPercent = Random.nextInt(75, 100),
+            batteryPercent = 100,
             isInsideGeofence = true,
             distanceToFenceMeters = 0.0,
             isLocalUser = false,
@@ -130,7 +131,7 @@ class MemberRepositoryImpl(
         val breachedLocation = target.currentLocation.copy(
             latitude = group.geofence.center.latitude + 0.0055,
             longitude = group.geofence.center.longitude,
-            timestamp = 1726218000000L + (0..100000).random()
+            timestamp = Clock.System.now().toEpochMilliseconds()
         )
 
         val breachedDto = target.copy(
@@ -174,7 +175,7 @@ class MemberRepositoryImpl(
         val safeLocation = target.currentLocation.copy(
             latitude = group.geofence.center.latitude,
             longitude = group.geofence.center.longitude,
-            timestamp = 1726218000000L + (0..100000).random()
+            timestamp = Clock.System.now().toEpochMilliseconds()
         )
 
         val safeDto = target.copy(
