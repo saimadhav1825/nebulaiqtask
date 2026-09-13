@@ -6,10 +6,17 @@ import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.GroupMember
 import com.app.nebulaiqtask.domain.util.GeoDistanceCalculator
 
+enum class GeofenceTransition {
+    NONE,
+    TRANSITION_EXIT,
+    TRANSITION_ENTER
+}
+
 data class GeofenceCheckResult(
     val memberId: String,
     val isInside: Boolean,
     val distanceOutsideMeters: Double,
+    val transition: GeofenceTransition,
     val generatedAlert: BreachAlert? = null
 )
 
@@ -20,10 +27,18 @@ class CheckGeofenceBreachUseCase {
         fence: GeofenceZone,
         totalGroupMembersCount: Int = 10
     ): GeofenceCheckResult {
-        val isInside = GeoDistanceCalculator.isCoordinateInsideFence(member.currentLocation, fence)
+        val wasInside = member.isInsideGeofence
+        val isNowInside = GeoDistanceCalculator.isCoordinateInsideFence(member.currentLocation, fence)
         val distanceOutside = GeoDistanceCalculator.distanceOutsideFenceMeters(member.currentLocation, fence)
 
-        val alert = if (!isInside && fence.alertOnExit) {
+        val transition = when {
+            wasInside && !isNowInside -> GeofenceTransition.TRANSITION_EXIT
+            !wasInside && isNowInside -> GeofenceTransition.TRANSITION_ENTER
+            else -> GeofenceTransition.NONE
+        }
+
+        // Only generate new alert when a transition EXIT occurs (or if initial position is already breached)
+        val alert = if ((transition == GeofenceTransition.TRANSITION_EXIT || (!isNowInside && member.lastUpdatedMillis == 0L)) && fence.alertOnExit) {
             BreachAlert(
                 id = "alert_${member.id}_${member.currentLocation.timestamp}",
                 groupId = groupId,
@@ -40,8 +55,9 @@ class CheckGeofenceBreachUseCase {
 
         return GeofenceCheckResult(
             memberId = member.id,
-            isInside = isInside,
+            isInside = isNowInside,
             distanceOutsideMeters = distanceOutside,
+            transition = transition,
             generatedAlert = alert
         )
     }

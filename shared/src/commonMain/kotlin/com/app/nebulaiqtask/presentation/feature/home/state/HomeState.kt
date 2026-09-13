@@ -4,6 +4,11 @@ import com.app.nebulaiqtask.domain.model.BreachAlert
 import com.app.nebulaiqtask.domain.model.GroupMember
 import com.app.nebulaiqtask.domain.model.TrackingGroup
 
+enum class HomeViewMode {
+    MAP,
+    RADAR
+}
+
 data class HomeState(
     val isLoading: Boolean = false,
     val activeGroup: TrackingGroup? = null,
@@ -12,5 +17,10 @@ data class HomeState(
     val isSimulationRunning: Boolean = false,
     val isTrackingActive: Boolean = true,
     val totalBreachesCount: Int = 0,
-    val selectedMemberForExitId: String? = null
+    val selectedMemberForExitId: String? = null,
+    val viewMode: HomeViewMode = HomeViewMode.MAP,
+    val hasLocationPermission: Boolean = true,
+    val hasNotificationPermission: Boolean = true,
+    val useRealDeviceGps: Boolean = false,
+    val deviceBatteryPercent: Int = 95
 )
