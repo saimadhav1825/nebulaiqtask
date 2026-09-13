@@ -155,14 +155,35 @@ class FirebaseGroupDataSource(
 
     suspend fun publishBreachAlert(groupCode: String, alert: BreachAlertDto): Result<Unit> {
         return runCatching {
-            client.post(alertsEndpoint(groupCode)) {
+            val sanitizedGroup = groupCode.trim().uppercase()
+            val alertKey = alert.id.trim()
+            val specificAlertUrl = "$databaseUrl/groups/$sanitizedGroup/alerts/$alertKey.json"
+            client.put(specificAlertUrl) {
                 contentType(ContentType.Application.Json)
                 setBody(alert)
             }
         }
     }
 
-    fun observeGroup(groupCode: String, pollIntervalMs: Long = 2500L): Flow<GroupDto?> = flow {
+    suspend fun getAlerts(groupCode: String): Result<List<BreachAlertDto>> {
+        return runCatching {
+            val response = client.get(alertsEndpoint(groupCode))
+            if (!response.status.isSuccess()) return@runCatching emptyList()
+
+            val body = response.body<JsonObject?>() ?: return@runCatching emptyList()
+            val list = mutableListOf<BreachAlertDto>()
+            for ((_, element) in body) {
+                try {
+                    list.add(json.decodeFromJsonElement<BreachAlertDto>(element))
+                } catch (e: Exception) {
+                    // Ignore malformed alert item
+                }
+            }
+            list.sortedByDescending { it.timestamp }
+        }
+    }
+
+    fun observeGroup(groupCode: String, pollIntervalMs: Long = 2000L): Flow<GroupDto?> = flow {
         while (currentCoroutineContext().isActive) {
             try {
                 val group = getGroup(groupCode).getOrNull()
@@ -180,7 +201,9 @@ class FirebaseGroupDataSource(
         val geofenceElement = body["geofence"] ?: throw IllegalStateException("Missing geofence")
         val geofence = json.decodeFromJsonElement<GeofenceZoneDto>(geofenceElement)
         val isTrackingActive = body["isTrackingActive"]?.toString()?.toBooleanStrictOrNull() ?: true
-        val activeAlertsCount = body["activeAlertsCount"]?.toString()?.toIntOrNull() ?: 0
+        val alertsObj = body["alerts"] as? JsonObject
+        val parsedAlertsCount = alertsObj?.size ?: 0
+        val activeAlertsCount = body["activeAlertsCount"]?.toString()?.toIntOrNull() ?: parsedAlertsCount
         val createdAt = body["createdAt"]?.toString()?.toLongOrNull() ?: 0L
 
         // Members can be a JSON object map or an array

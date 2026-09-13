@@ -28,8 +28,8 @@ class NotificationRepositoryImpl(
         recipientCount: Int
     ) {
         val distanceInt = alert.distanceOutsideMeters.toInt()
-        val title = "⚠️ Geofence Breach: ${alert.memberName}"
-        val message = "${alert.memberName} moved $distanceInt m outside the safe zone in $groupName."
+        val title = "🚨 GEOFENCE BREACH: ${alert.memberName}"
+        val message = "${alert.memberName} exited $groupName safe zone (+${distanceInt}m)!"
 
         // 1. Post native Android Heads-Up notification
         platformDispatcher.showHeadsUpBreachNotification(

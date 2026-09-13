@@ -1,5 +1,6 @@
 package com.app.nebulaiqtask.data.repository
 
+import com.app.nebulaiqtask.data.datasource.FirebaseGroupDataSource
 import com.app.nebulaiqtask.data.datasource.LocalGroupDataSource
 import com.app.nebulaiqtask.data.mapper.AlertMapper
 import com.app.nebulaiqtask.data.mapper.LocationMapper
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.map
 
 class GeofenceTrackerRepositoryImpl(
     private val dataSource: LocalGroupDataSource,
+    private val firebaseDataSource: FirebaseGroupDataSource,
     private val alertMapper: AlertMapper,
     private val locationMapper: LocationMapper
 ) : GeofenceTrackerRepository {
@@ -26,6 +28,11 @@ class GeofenceTrackerRepositoryImpl(
     override suspend fun recordBreachAlert(alert: BreachAlert) {
         val dto = alertMapper.toDto(alert)
         dataSource.addAlert(dto)
+        try {
+            firebaseDataSource.publishBreachAlert(alert.groupId, dto)
+        } catch (e: Exception) {
+            // Alert safely preserved in local state if offline
+        }
     }
 
     override suspend fun acknowledgeAlert(alertId: String) {

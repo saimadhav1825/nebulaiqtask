@@ -40,6 +40,12 @@ class TrackingGroupRepositoryImpl(
                             m.copy(isLocalUser = m.id == currentUserId)
                         }
                         localDataSource.saveGroup(remoteGroup.copy(members = updatedMembers))
+
+                        // Sync remote breach alerts into local data source
+                        val remoteAlerts = firebaseDataSource.getAlerts(sanitizedId).getOrDefault(emptyList())
+                        if (remoteAlerts.isNotEmpty()) {
+                            localDataSource.syncAlerts(remoteAlerts)
+                        }
                     }
                 }
             } catch (e: Exception) {

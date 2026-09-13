@@ -74,10 +74,21 @@ class LocalGroupDataSource {
     }
 
     fun addAlert(alert: BreachAlertDto) {
-        _alerts.update { current -> listOf(alert) + current }
+        _alerts.update { current -> 
+            if (current.any { it.id == alert.id }) current 
+            else listOf(alert) + current 
+        }
         _groups.update { current ->
             val group = current[alert.groupId] ?: return@update current
             current + (alert.groupId to group.copy(activeAlertsCount = group.activeAlertsCount + 1))
+        }
+    }
+
+    fun syncAlerts(alertsList: List<BreachAlertDto>) {
+        _alerts.update { current ->
+            val existingIds = current.map { it.id }.toSet()
+            val newItems = alertsList.filterNot { it.id in existingIds }
+            (newItems + current).sortedByDescending { it.timestamp }
         }
     }
 

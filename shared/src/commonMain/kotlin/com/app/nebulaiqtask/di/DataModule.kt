@@ -30,6 +30,6 @@ val dataModule = module {
     // Domain Repositories
     single<TrackingGroupRepository> { TrackingGroupRepositoryImpl(get(), get(), get(), get(), get()) }
     single<MemberRepository> { MemberRepositoryImpl(get(), get(), get(), get()) }
-    single<GeofenceTrackerRepository> { GeofenceTrackerRepositoryImpl(get(), get(), get()) }
+    single<GeofenceTrackerRepository> { GeofenceTrackerRepositoryImpl(get(), get(), get(), get()) }
     single<NotificationRepository> { NotificationRepositoryImpl(get(), get(), get()) }
 }
