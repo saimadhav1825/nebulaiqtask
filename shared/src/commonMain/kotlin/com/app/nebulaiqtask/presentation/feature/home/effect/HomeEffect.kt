@@ -6,4 +6,5 @@ sealed interface HomeEffect {
     data object NavigateToCreateGroup : HomeEffect
     data class NavigateToAlerts(val groupId: String) : HomeEffect
     data class NavigateToMemberDetail(val memberId: String, val groupId: String) : HomeEffect
+    data object RequestSystemPermissions : HomeEffect
 }

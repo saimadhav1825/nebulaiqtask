@@ -22,7 +22,12 @@ val presentationModule = module {
             triggerMemberReturnUseCase = get(),
             acknowledgeAlertUseCase = get(),
             toggleTrackingUseCase = get(),
-            getActiveAlertsUseCase = get()
+            getActiveAlertsUseCase = get(),
+            updateMemberLocationUseCase = get(),
+            permissionManager = get(),
+            locationTracker = get(),
+            deviceTelemetry = get(),
+            notificationManager = get()
         )
     }
 

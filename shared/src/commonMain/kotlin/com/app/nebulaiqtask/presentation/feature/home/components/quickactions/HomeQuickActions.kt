@@ -22,8 +22,10 @@ fun HomeQuickActions(
     members: List<GroupMember>,
     isSimulationRunning: Boolean,
     isTrackingActive: Boolean,
+    useRealDeviceGps: Boolean,
     onToggleSimulation: () -> Unit,
     onToggleTracking: () -> Unit,
+    onToggleRealDeviceGps: (Boolean) -> Unit,
     onTriggerBreach: (String) -> Unit,
     onReturnToSafety: (String) -> Unit,
     onCreateGroupClicked: () -> Unit,
@@ -78,12 +80,44 @@ fun HomeQuickActions(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Member Selector Bar
-            Text(
-                text = "Target Member for Geofence Testing:",
-                fontSize = 12.sp,
-                color = NebulaColors.TextPrimary
-            )
+            // Real Device GPS Toggle Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(NebulaColors.CardElevated)
+                    .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("📍 Real Device GPS", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NebulaColors.TextPrimary)
+                        if (useRealDeviceGps) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("LIVE", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = NebulaColors.AccentCyan)
+                        }
+                    }
+                    Text(
+                        text = if (useRealDeviceGps) "Using phone's hardware GPS chip for You (Alex)" else "Using simulated motion for You (Alex)",
+                        fontSize = 11.sp,
+                        color = NebulaColors.TextSecondary
+                    )
+                }
+                Switch(
+                    checked = useRealDeviceGps,
+                    onCheckedChange = { onToggleRealDeviceGps(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = NebulaColors.AccentCyan,
+                        uncheckedThumbColor = NebulaColors.TextSecondary,
+                        uncheckedTrackColor = NebulaColors.DeepBackground
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
             Spacer(modifier = Modifier.height(6.dp))
 
             Box(
