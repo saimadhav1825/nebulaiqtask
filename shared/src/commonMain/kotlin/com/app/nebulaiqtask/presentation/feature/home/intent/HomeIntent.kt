@@ -19,6 +19,9 @@ sealed interface HomeIntent {
     data object RequestPermissions : HomeIntent
     data object OnPermissionsUpdated : HomeIntent
 
+    /** Called when a new group has been created, so HomeViewModel can start observing it */
+    data class SwitchToGroup(val groupId: String) : HomeIntent
+
     // Multi-Device & Firebase Group Management
     data class ShowJoinGroupDialog(val show: Boolean) : HomeIntent
     data class OnJoinGroupCodeChanged(val code: String) : HomeIntent

@@ -15,7 +15,6 @@ data class HomeState(
     val activeGroup: TrackingGroup? = null,
     val members: List<GroupMember> = emptyList(),
     val latestAlert: BreachAlert? = null,
-    val isSimulationRunning: Boolean = false,
     val isTrackingActive: Boolean = true,
     val totalBreachesCount: Int = 0,
     val selectedMemberForExitId: String? = null,

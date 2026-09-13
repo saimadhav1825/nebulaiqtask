@@ -40,9 +40,9 @@ class HomeViewModel(
     private val notificationManager: PlatformNotificationManager
 ) : ViewModel() {
 
-    private val defaultGroupId = "NEB-7700"
-    private var activeGroupId: String
-        get() = savedStateHandle.get<String>("KEY_GROUP_ID") ?: defaultGroupId
+    // Active group ID — null means no group joined/created yet (empty state)
+    private var activeGroupId: String?
+        get() = savedStateHandle.get<String>("KEY_GROUP_ID")
         set(value) {
             savedStateHandle["KEY_GROUP_ID"] = value
         }
@@ -69,8 +69,13 @@ class HomeViewModel(
     private var gpsTrackingJob: Job? = null
 
     init {
-        savedStateHandle["KEY_GROUP_ID"] = activeGroupId
-        observeGroupData()
+        // Only observe group data if a group ID is already known
+        if (activeGroupId != null) {
+            observeGroupData()
+        } else {
+            // No group yet — set isLoading=false so empty state UI shows
+            _state.update { it.copy(isLoading = false) }
+        }
         checkPermissions()
         if (_state.value.hasLocationPermission) {
             startRealDeviceGps()
@@ -92,7 +97,7 @@ class HomeViewModel(
         membersObservationJob?.cancel()
         alertsObservationJob?.cancel()
 
-        val groupId = activeGroupId
+        val groupId = activeGroupId ?: return  // No group — nothing to observe
 
         groupObservationJob = viewModelScope.launch {
             getTrackingGroupUseCase(groupId).collectLatest { group ->
@@ -216,7 +221,7 @@ class HomeViewModel(
                             )
                             notificationManager.playBreachAlertHapticAndAudio()
                         }
-                        _effect.send(HomeEffect.ShowSnackbar("⚠️ Breach simulated for ${breached.name}! Group alerted."))
+                        _effect.send(HomeEffect.ShowSnackbar("⚠️ Breach triggered for ${breached.name}! Group alerted."))
                     }
                 }
             }
@@ -239,6 +244,11 @@ class HomeViewModel(
                 viewModelScope.launch {
                     _effect.send(HomeEffect.NavigateToCreateGroup)
                 }
+            }
+            is HomeIntent.SwitchToGroup -> {
+                activeGroupId = intent.groupId
+                _state.update { it.copy(isLoading = true) }
+                observeGroupData()
             }
             is HomeIntent.OnGroupCardClicked -> {
                 viewModelScope.launch {

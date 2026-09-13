@@ -26,6 +26,7 @@ dependencies {
     // Firebase — managed via BOM for consistent versioning
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
 }
 
 android {
