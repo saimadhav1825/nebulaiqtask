@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.GroupMember
+import com.app.nebulaiqtask.domain.model.LocationCoordinate
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 import kotlinx.coroutines.launch
 import org.maplibre.compose.camera.CameraPosition
@@ -170,8 +171,12 @@ actual fun GroupMapView(
                         .background(NebulaColors.PrimaryIndigo, CircleShape)
                 )
 
-                // 3. Render 10 Group Members with Live Geodesic Positioning & Status
-                members.forEach { member ->
+                // 3. Render Group Members with Live Geodesic Positioning & Visual Overlap Dispersal
+                val dispersedMembers = remember(members) {
+                    disperseOverlappingMembers(members)
+                }
+
+                dispersedMembers.forEach { (member, displayCoord) ->
                     key(member.id) {
                         MemberMapPin(
                             member = member,
@@ -180,8 +185,8 @@ actual fun GroupMapView(
                             onClick = { onMemberClick(member.id) },
                             modifier = Modifier.placedAt(
                                 position = Position(
-                                    longitude = member.currentLocation.longitude,
-                                    latitude = member.currentLocation.latitude
+                                    longitude = displayCoord.longitude,
+                                    latitude = displayCoord.latitude
                                 ),
                                 alignment = Alignment.Center
                             )
@@ -372,4 +377,54 @@ private fun MemberMapPin(
             )
         }
     }
+}
+
+/**
+ * Ensures co-located or overlapping members (such as newly joined members prior to moving)
+ * have slightly offset visual pin positions so all members remain clearly visible and clickable.
+ */
+internal fun disperseOverlappingMembers(members: List<GroupMember>): List<Pair<GroupMember, LocationCoordinate>> {
+    if (members.isEmpty()) return emptyList()
+
+    val result = mutableListOf<Pair<GroupMember, LocationCoordinate>>()
+    val clusters = mutableListOf<MutableList<GroupMember>>()
+
+    for (member in members) {
+        val cluster = clusters.find { cl ->
+            val first = cl.first().currentLocation
+            val dLat = member.currentLocation.latitude - first.latitude
+            val dLon = member.currentLocation.longitude - first.longitude
+            // ~15 meters squared in degrees squared
+            (dLat * dLat + dLon * dLon) < 0.00000003
+        }
+        if (cluster != null) {
+            cluster.add(member)
+        } else {
+            clusters.add(mutableListOf(member))
+        }
+    }
+
+    for (cluster in clusters) {
+        if (cluster.size == 1) {
+            result.add(cluster[0] to cluster[0].currentLocation)
+        } else {
+            val count = cluster.size
+            for (i in cluster.indices) {
+                val member = cluster[i]
+                val angle = (2.0 * kotlin.math.PI * i / count)
+                val baseLat = member.currentLocation.latitude
+                val baseLon = member.currentLocation.longitude
+                val radiusMeters = 20.0 // 20 meters spacing between overlapping pins
+                val latOffset = (radiusMeters / 111000.0) * kotlin.math.cos(angle)
+                val lonOffset = (radiusMeters / (111000.0 * kotlin.math.cos(baseLat * kotlin.math.PI / 180.0))) * kotlin.math.sin(angle)
+                val dispersed = member.currentLocation.copy(
+                    latitude = baseLat + latOffset,
+                    longitude = baseLon + lonOffset
+                )
+                result.add(member to dispersed)
+            }
+        }
+    }
+
+    return result
 }

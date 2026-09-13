@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlin.time.Duration.Companion.milliseconds
@@ -209,16 +211,29 @@ class FirebaseGroupDataSource(
 
         // Members can be a JSON object map or an array
         val membersList = mutableListOf<MemberDto>()
-        val membersObj = body["members"] as? JsonObject
-        if (membersObj != null) {
-            for ((_, memberElement) in membersObj) {
-                try {
-                    val m = json.decodeFromJsonElement<MemberDto>(memberElement)
-                    membersList.add(m)
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        when (val membersElem = body["members"]) {
+            is JsonObject -> {
+                for ((_, memberElement) in membersElem) {
+                    try {
+                        val m = json.decodeFromJsonElement<MemberDto>(memberElement)
+                        membersList.add(m)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
+            is JsonArray -> {
+                for (memberElement in membersElem) {
+                    if (memberElement is JsonNull) continue
+                    try {
+                        val m = json.decodeFromJsonElement<MemberDto>(memberElement)
+                        membersList.add(m)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            else -> {}
         }
 
         return GroupDto(

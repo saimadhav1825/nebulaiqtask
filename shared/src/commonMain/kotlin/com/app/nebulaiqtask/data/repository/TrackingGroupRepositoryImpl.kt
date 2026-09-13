@@ -134,19 +134,33 @@ class TrackingGroupRepositoryImpl(
         val sanitizedCode = groupCode.trim().uppercase()
         val now = Clock.System.now().toEpochMilliseconds()
         val profile = userRepository.getCurrentProfile()
-        val initials = profile.initials.ifBlank { "MB" }
 
         // Determine existing group to evaluate real containment
         val existingGroup = firebaseDataSource.getGroup(sanitizedCode).getOrNull()
             ?: localDataSource.getGroup(sanitizedCode)
 
+        // Single-device / test simulation support: if the local user is already in this group,
+        // create a distinct teammate ID so both users are present and visible on the map
+        val isAlreadyMember = existingGroup?.members?.any { it.id == profile.userId } == true
+        val memberId = if (isAlreadyMember) "usr_${Random.nextInt(1000, 9999)}" else profile.userId
+        val memberName = if (isAlreadyMember) "Teammate ${Random.nextInt(10, 99)}" else profile.displayName
+        val initials = memberName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
+
         val locDto = localDataSource.userLiveLocation.value
-            ?: com.app.nebulaiqtask.data.dto.LocationDto(
-                existingGroup?.geofence?.center?.latitude ?: 37.7749,
-                existingGroup?.geofence?.center?.longitude ?: -122.4194,
-                3.5f,
-                now
-            )
+            ?: run {
+                val centerLat = existingGroup?.geofence?.center?.latitude ?: 37.7749
+                val centerLon = existingGroup?.geofence?.center?.longitude ?: -122.4194
+                val memberCount = existingGroup?.members?.size ?: 1
+                val angle = (memberCount * 137.5) * (kotlin.math.PI / 180.0)
+                val latOffset = (22.0 / 111000.0) * kotlin.math.cos(angle)
+                val lonOffset = (22.0 / (111000.0 * kotlin.math.cos(centerLat * kotlin.math.PI / 180.0))) * kotlin.math.sin(angle)
+                com.app.nebulaiqtask.data.dto.LocationDto(
+                    latitude = centerLat + latOffset,
+                    longitude = centerLon + lonOffset,
+                    accuracyMeters = 3.5f,
+                    timestamp = now
+                )
+            }
 
         val (isInside, distanceOutside) = if (existingGroup != null) {
             val domainLoc = LocationCoordinate(locDto.latitude, locDto.longitude, locDto.accuracyMeters, locDto.timestamp)
@@ -158,11 +172,14 @@ class TrackingGroupRepositoryImpl(
             true to 0.0
         }
 
+        val colors = listOf(0xFF6366F1, 0xFF06B6D4, 0xFF10B981, 0xFFF59E0B, 0xFFEC4899, 0xFF8B5CF6)
+        val memberColor = if (isAlreadyMember) colors[Random.nextInt(colors.size)] else profile.avatarColorHex
+
         val newMember = MemberDto(
-            id = profile.userId,
-            name = profile.displayName,
+            id = memberId,
+            name = memberName,
             role = "MEMBER",
-            avatarColorHex = profile.avatarColorHex,
+            avatarColorHex = memberColor,
             initials = initials,
             currentLocation = locDto,
             batteryPercent = 100,

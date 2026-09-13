@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.GroupMember
+import com.app.nebulaiqtask.domain.model.LocationCoordinate
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 import kotlin.math.cos
 import kotlin.math.sin

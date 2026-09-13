@@ -86,13 +86,24 @@ class MemberRepositoryImpl(
         val memberName = name.ifBlank { "Member $randomDigits" }
         val initials = memberName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
 
+        val centerLat = group.geofence.center.latitude
+        val centerLon = group.geofence.center.longitude
+        val angle = ((group.members.size + 1) * 137.5) * (kotlin.math.PI / 180.0)
+        val latOffset = (22.0 / 111000.0) * kotlin.math.cos(angle)
+        val lonOffset = (22.0 / (111000.0 * kotlin.math.cos(centerLat * kotlin.math.PI / 180.0))) * kotlin.math.sin(angle)
+        val initialLocation = group.geofence.center.copy(
+            latitude = centerLat + latOffset,
+            longitude = centerLon + lonOffset,
+            timestamp = now
+        )
+
         val newMember = MemberDto(
             id = memberId,
             name = memberName,
             role = role.name,
             avatarColorHex = color,
             initials = initials,
-            currentLocation = group.geofence.center,
+            currentLocation = initialLocation,
             batteryPercent = 100,
             isInsideGeofence = true,
             distanceToFenceMeters = 0.0,
