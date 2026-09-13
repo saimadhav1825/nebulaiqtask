@@ -46,6 +46,8 @@ kotlin {
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.core.ktx)
             implementation(libs.koin.android)
+            implementation(libs.maplibre.android.sdk)
+            implementation(libs.maplibre.compose.runtime.opengl)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -68,6 +70,9 @@ kotlin {
 
             // Coroutines
             implementation(libs.kotlinx.coroutines.core)
+
+            // MapLibre Compose Multiplatform
+            implementation(libs.maplibre.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

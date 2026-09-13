@@ -20,6 +20,7 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+    implementation(libs.maplibre.android.sdk)
 }
 
 android {
