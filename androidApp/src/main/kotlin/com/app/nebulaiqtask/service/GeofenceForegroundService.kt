@@ -98,9 +98,10 @@ class GeofenceForegroundService : Service(), KoinComponent {
                         distanceToFence = check.distanceOutsideMeters
                     )
 
-                    if (check.generatedAlert != null) {
+                    val localAlert = check.generatedAlert
+                    if (localAlert != null) {
                         sendBreachNotificationUseCase(
-                            alert = check.generatedAlert,
+                            alert = localAlert,
                             groupName = currentGroup.name,
                             recipientCount = currentGroup.members.size - 1
                         )
@@ -123,9 +124,10 @@ class GeofenceForegroundService : Service(), KoinComponent {
                             totalGroupMembersCount = group.members.size
                         )
 
-                        if (result.generatedAlert != null) {
+                        val memberAlert = result.generatedAlert
+                        if (memberAlert != null) {
                             sendBreachNotificationUseCase(
-                                alert = result.generatedAlert,
+                                alert = memberAlert,
                                 groupName = group.name,
                                 recipientCount = group.members.size - 1
                             )
