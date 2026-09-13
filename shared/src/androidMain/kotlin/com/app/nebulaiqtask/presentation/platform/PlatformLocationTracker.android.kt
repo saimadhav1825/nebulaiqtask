@@ -6,6 +6,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import com.app.nebulaiqtask.domain.model.LocationCoordinate
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -48,14 +49,16 @@ actual class PlatformLocationTracker(
                     LocationManager.GPS_PROVIDER,
                     3000L,
                     2.0f,
-                    listener
+                    listener,
+                    Looper.getMainLooper()
                 )
             } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 locationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER,
                     3000L,
                     2.0f,
-                    listener
+                    listener,
+                    Looper.getMainLooper()
                 )
             }
 
