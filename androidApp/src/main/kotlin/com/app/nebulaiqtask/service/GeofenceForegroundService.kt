@@ -10,6 +10,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.app.nebulaiqtask.MainActivity
 import com.app.nebulaiqtask.data.datasource.LocalGroupDataSource
+import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.domain.repository.MemberRepository
 import com.app.nebulaiqtask.domain.repository.TrackingGroupRepository
 import com.app.nebulaiqtask.domain.repository.UserRepository
@@ -151,7 +152,7 @@ class GeofenceForegroundService : Service(), KoinComponent {
                                 memberName = member.name
                             )
                         }
-                        if (!result.isInside) {
+                        if (!result.isInside && member.role != MemberRole.LEADER) {
                             breachCount++
                         }
                     }
