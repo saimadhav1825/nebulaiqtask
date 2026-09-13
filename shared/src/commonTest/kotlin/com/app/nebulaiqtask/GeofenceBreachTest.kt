@@ -188,11 +188,11 @@ class GeofenceBreachTest {
     }
 
     @Test
-    fun testOwnerExitDoesNotGenerateAlert() {
+    fun testMemberExitGeneratesAlertForOtherMembers() {
         val checkUseCase = CheckGeofenceBreachUseCase()
-        val ownerMember = GroupMember(
+        val exitingMember = GroupMember(
             id = "leader1",
-            name = "Group Owner",
+            name = "Group Member",
             role = MemberRole.LEADER,
             avatarColorHex = 0xFFFFD700,
             initials = "GO",
@@ -202,12 +202,12 @@ class GeofenceBreachTest {
 
         val result = checkUseCase(
             groupId = "group_test",
-            member = ownerMember,
+            member = exitingMember,
             fence = fence,
             totalGroupMembersCount = 10
         )
 
         assertFalse(result.isInside)
-        assertNull(result.generatedAlert, "Owner exiting geofence perimeter must NEVER generate breach alert")
+        assertNotNull(result.generatedAlert, "Exiting geofence perimeter generates breach alert for other members")
     }
 }

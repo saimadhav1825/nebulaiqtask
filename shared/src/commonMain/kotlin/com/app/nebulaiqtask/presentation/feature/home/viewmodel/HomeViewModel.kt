@@ -161,15 +161,14 @@ class HomeViewModel(
                             totalGroupMembersCount = membersList.size
                         )
 
-                        // ONLY the group owner receives breach notifications on their device
-                        if (result.generatedAlert != null && isCurrentUserOwner) {
+                        // Other members of the group are notified (never the member who moved out)
+                        if (result.generatedAlert != null && member.id != myUserId) {
                             sendBreachNotificationUseCase(
                                 alert = result.generatedAlert,
                                 groupName = group.name,
-                                recipientCount = membersList.size - 1,
-                                isLocalUserOwner = true
+                                recipientCount = membersList.size - 1
                             )
-                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER && isCurrentUserOwner) {
+                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER && member.id != myUserId) {
                             sendBreachNotificationUseCase.onMemberReturnedToSafety(
                                 groupId = groupId,
                                 memberId = member.id,
