@@ -58,6 +58,12 @@ class GeofenceForegroundService : Service(), KoinComponent {
     private fun startBackgroundMonitoring() {
         trackingJob?.cancel()
         trackingJob = serviceScope.launch {
+            // Restore active tracking group from persistent storage if memory cache is empty
+            val savedGroupId = userRepository.getActiveGroupId()
+            if (savedGroupId != null && localGroupDataSource.groups.value.isEmpty()) {
+                trackingGroupRepository.getTrackingGroup(savedGroupId)
+            }
+
             localGroupDataSource.groups.collectLatest { groupsMap ->
                 val activeGroup = groupsMap.values.firstOrNull { it.isTrackingActive }
                 if (activeGroup != null) {

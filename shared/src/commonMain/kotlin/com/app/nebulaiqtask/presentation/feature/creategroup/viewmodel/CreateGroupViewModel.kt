@@ -9,6 +9,7 @@ import com.app.nebulaiqtask.domain.usecase.CreateTrackingGroupUseCase
 import com.app.nebulaiqtask.presentation.feature.creategroup.effect.CreateGroupEffect
 import com.app.nebulaiqtask.presentation.feature.creategroup.intent.CreateGroupIntent
 import com.app.nebulaiqtask.presentation.feature.creategroup.state.CreateGroupState
+import com.app.nebulaiqtask.presentation.platform.PlatformLocationTracker
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,7 +17,8 @@ import kotlinx.datetime.Clock as DateTimeClock
 
 class CreateGroupViewModel(
     private val savedStateHandle: SavedStateHandle,
-    private val createTrackingGroupUseCase: CreateTrackingGroupUseCase
+    private val createTrackingGroupUseCase: CreateTrackingGroupUseCase,
+    private val locationTracker: PlatformLocationTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -27,6 +29,18 @@ class CreateGroupViewModel(
         )
     )
     val state: StateFlow<CreateGroupState> = _state.asStateFlow()
+
+    init {
+        val currentLoc = locationTracker.getCurrentLocation()
+        if (currentLoc != null) {
+            _state.update {
+                it.copy(
+                    latitude = currentLoc.latitude,
+                    longitude = currentLoc.longitude
+                )
+            }
+        }
+    }
 
     private val _effect = Channel<CreateGroupEffect>(Channel.BUFFERED)
     val effect: Flow<CreateGroupEffect> = _effect.receiveAsFlow()

@@ -3,6 +3,7 @@ package com.app.nebulaiqtask.presentation.feature.home.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.nebulaiqtask.domain.repository.UserRepository
 import com.app.nebulaiqtask.domain.usecase.*
 import com.app.nebulaiqtask.presentation.feature.home.effect.HomeEffect
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val savedStateHandle: SavedStateHandle,
+    private val userRepository: UserRepository,
     private val getTrackingGroupUseCase: GetTrackingGroupUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val checkGeofenceBreachUseCase: CheckGeofenceBreachUseCase,
@@ -89,12 +91,22 @@ class HomeViewModel(
             }
         }
 
-        // Only observe group data if a group ID is already known
-        if (activeGroupId != null) {
-            observeGroupData()
-        } else {
-            // No group yet — set isLoading=false so empty state UI shows
-            _state.update { it.copy(isLoading = false) }
+        // Observe group data: restore from savedStateHandle or persistent UserRepository
+        viewModelScope.launch {
+            val currentId = activeGroupId
+            if (currentId != null) {
+                observeGroupData()
+            } else {
+                val savedId = userRepository.getActiveGroupId()
+                if (!savedId.isNullOrBlank()) {
+                    activeGroupId = savedId
+                    _state.update { it.copy(isLoading = true) }
+                    observeGroupData()
+                } else {
+                    // No group yet — show empty state UI
+                    _state.update { it.copy(isLoading = false) }
+                }
+            }
         }
         checkPermissions()
         if (_state.value.hasLocationPermission) {
@@ -260,6 +272,7 @@ class HomeViewModel(
             }
             is HomeIntent.SwitchToGroup -> {
                 activeGroupId = intent.groupId
+                viewModelScope.launch { userRepository.saveActiveGroupId(intent.groupId) }
                 _state.update { it.copy(isLoading = true) }
                 observeGroupData()
             }
@@ -320,6 +333,7 @@ class HomeViewModel(
 
             result.onSuccess { joinedGroup ->
                 activeGroupId = joinedGroup.id
+                viewModelScope.launch { userRepository.saveActiveGroupId(joinedGroup.id) }
                 _state.update {
                     it.copy(
                         isJoinGroupDialogVisible = false,

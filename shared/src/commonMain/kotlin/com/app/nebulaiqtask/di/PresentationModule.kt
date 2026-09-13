@@ -13,6 +13,7 @@ val presentationModule = module {
     viewModel { params ->
         HomeViewModel(
             savedStateHandle = params.getOrNull() ?: SavedStateHandle(),
+            userRepository = get(),
             getTrackingGroupUseCase = get(),
             getGroupMembersUseCase = get(),
             checkGeofenceBreachUseCase = get(),
@@ -41,7 +42,8 @@ val presentationModule = module {
     viewModel { params ->
         CreateGroupViewModel(
             savedStateHandle = params.getOrNull() ?: SavedStateHandle(),
-            createTrackingGroupUseCase = get()
+            createTrackingGroupUseCase = get(),
+            locationTracker = get()
         )
     }
 
