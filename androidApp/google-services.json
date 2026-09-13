@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "100000000000",
+    "project_id": "nebulaiq-tracking",
+    "storage_bucket": "nebulaiq-tracking.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100000000000:android:a1b2c3d4e5f6a1b2c3d4e5",
+        "android_client_info": {
+          "package_name": "com.app.nebulaiqtask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyNebulaIqDevKeyPlaceholder00000000"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
