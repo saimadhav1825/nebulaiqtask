@@ -68,9 +68,10 @@ fun GeofenceRadarVisualizer(
                 .fillMaxSize()
                 .pointerInput(members) {
                     detectTapGestures { tapOffset ->
+                        val minDim = minOf(size.width, size.height).toFloat()
                         val centerX = size.width / 2f
                         val centerY = size.height / 2f
-                        val radiusPx = (size.minDimension / 2f) * 0.70f
+                        val radiusPx = (minDim / 2f) * 0.70f
 
                         val centerLat = geofence.center.latitude
                         val centerLon = geofence.center.longitude
@@ -84,8 +85,10 @@ fun GeofenceRadarVisualizer(
                             val dotX = centerX + (dLon.toFloat() * scale)
                             val dotY = centerY - (dLat.toFloat() * scale)
 
-                            val distanceSq = (tapOffset.x - dotX) * (tapOffset.x - dotX) + (tapOffset.y - dotY) * (tapOffset.y - dotY)
-                            if (distanceSq < 30f * 30f) {
+                            val dx = tapOffset.x - dotX
+                            val dy = tapOffset.y - dotY
+                            val distanceSq = dx * dx + dy * dy
+                            if (distanceSq < 900f) {
                                 onMemberClicked(member.id)
                                 break
                             }
