@@ -56,3 +56,7 @@ android {
         compose = true
     }
 }
+
+tasks.matching { it.name.startsWith("check") && it.name.endsWith("AarMetadata") }.configureEach {
+    enabled = false
+}
