@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlin.time.Duration.Companion.milliseconds
 
 @Serializable
 internal data class FirebaseGroupPayload(
@@ -191,7 +192,7 @@ class FirebaseGroupDataSource(
             } catch (e: Exception) {
                 // Ignore transient network errors during continuous polling
             }
-            delay(pollIntervalMs)
+            delay(pollIntervalMs.milliseconds)
         }
     }
 
