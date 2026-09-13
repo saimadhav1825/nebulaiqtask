@@ -13,7 +13,8 @@ val presentationModule = module {
     viewModel { params ->
         HomeViewModel(
             savedStateHandle = params.getOrNull() ?: SavedStateHandle(),
-            userRepository = get(),
+            getActiveGroupIdUseCase = get(),
+            saveActiveGroupIdUseCase = get(),
             getTrackingGroupUseCase = get(),
             getGroupMembersUseCase = get(),
             checkGeofenceBreachUseCase = get(),
@@ -76,8 +77,8 @@ val presentationModule = module {
             savedStateHandle = params.getOrNull() ?: SavedStateHandle(),
             getActiveAlertsUseCase = get(),
             acknowledgeAlertUseCase = get(),
-            geofenceTrackerRepository = get(),
-            notificationRepository = get()
+            getDeliveredNotificationsUseCase = get(),
+            clearActiveAlertsUseCase = get()
         )
     }
 }

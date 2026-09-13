@@ -3,10 +3,10 @@ package com.app.nebulaiqtask.presentation.feature.alerts.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.nebulaiqtask.domain.repository.GeofenceTrackerRepository
-import com.app.nebulaiqtask.domain.repository.NotificationRepository
 import com.app.nebulaiqtask.domain.usecase.AcknowledgeAlertUseCase
+import com.app.nebulaiqtask.domain.usecase.ClearActiveAlertsUseCase
 import com.app.nebulaiqtask.domain.usecase.GetActiveAlertsUseCase
+import com.app.nebulaiqtask.domain.usecase.GetDeliveredNotificationsUseCase
 import com.app.nebulaiqtask.presentation.feature.alerts.effect.AlertsEffect
 import com.app.nebulaiqtask.presentation.feature.alerts.intent.AlertsIntent
 import com.app.nebulaiqtask.presentation.feature.alerts.state.AlertsState
@@ -18,8 +18,8 @@ class AlertsViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val getActiveAlertsUseCase: GetActiveAlertsUseCase,
     private val acknowledgeAlertUseCase: AcknowledgeAlertUseCase,
-    private val geofenceTrackerRepository: GeofenceTrackerRepository,
-    private val notificationRepository: NotificationRepository
+    private val getDeliveredNotificationsUseCase: GetDeliveredNotificationsUseCase,
+    private val clearActiveAlertsUseCase: ClearActiveAlertsUseCase
 ) : ViewModel() {
 
     private val groupId: String = savedStateHandle.get<String>("groupId") ?: "group_team_alpha"
@@ -42,7 +42,7 @@ class AlertsViewModel(
         }
 
         viewModelScope.launch {
-            notificationRepository.getDeliveredNotificationsFlow().collectLatest { notificationsList ->
+            getDeliveredNotificationsUseCase().collectLatest { notificationsList ->
                 _state.update { it.copy(notifications = notificationsList) }
             }
         }
@@ -62,7 +62,7 @@ class AlertsViewModel(
             }
             is AlertsIntent.ClearAllAlerts -> {
                 viewModelScope.launch {
-                    geofenceTrackerRepository.clearAlerts(groupId)
+                    clearActiveAlertsUseCase(groupId)
                     _effect.send(AlertsEffect.ShowSnackbar("All alerts cleared."))
                 }
             }
