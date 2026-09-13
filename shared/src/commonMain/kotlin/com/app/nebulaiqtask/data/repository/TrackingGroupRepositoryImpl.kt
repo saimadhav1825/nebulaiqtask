@@ -6,21 +6,21 @@ import com.app.nebulaiqtask.data.dto.GroupDto
 import com.app.nebulaiqtask.data.dto.MemberDto
 import com.app.nebulaiqtask.data.mapper.GeofenceMapper
 import com.app.nebulaiqtask.data.mapper.GroupMapper
-import com.app.nebulaiqtask.data.session.UserSessionManager
 import com.app.nebulaiqtask.domain.model.GeofenceZone
 import com.app.nebulaiqtask.domain.model.TrackingGroup
 import com.app.nebulaiqtask.domain.repository.TrackingGroupRepository
+import com.app.nebulaiqtask.domain.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Clock as DateTimeClock
 import kotlin.random.Random
 
 class TrackingGroupRepositoryImpl(
     private val localDataSource: LocalGroupDataSource,
     private val firebaseDataSource: FirebaseGroupDataSource,
-    private val userSessionManager: UserSessionManager,
+    private val userRepository: UserRepository,
     private val groupMapper: GroupMapper,
     private val geofenceMapper: GeofenceMapper
 ) : TrackingGroupRepository {
@@ -35,7 +35,7 @@ class TrackingGroupRepositoryImpl(
             try {
                 firebaseDataSource.observeGroup(sanitizedId).collect { remoteGroup ->
                     if (remoteGroup != null) {
-                        val currentUserId = userSessionManager.getUserId()
+                        val currentUserId = userRepository.currentUserProfile.value.userId
                         val updatedMembers = remoteGroup.members.map { m ->
                             m.copy(isLocalUser = m.id == currentUserId)
                         }
@@ -63,7 +63,7 @@ class TrackingGroupRepositoryImpl(
         return try {
             val remote = firebaseDataSource.getGroup(sanitized).getOrNull()
             if (remote != null) {
-                val currentUserId = userSessionManager.getUserId()
+                val currentUserId = userRepository.currentUserProfile.value.userId
                 val updatedMembers = remote.members.map { m ->
                     m.copy(isLocalUser = m.id == currentUserId)
                 }
@@ -77,13 +77,13 @@ class TrackingGroupRepositoryImpl(
     }
 
     override suspend fun createTrackingGroup(name: String, geofence: GeofenceZone): TrackingGroup {
-        val now = Clock.System.now().toEpochMilliseconds()
+        val now = DateTimeClock.System.now().toEpochMilliseconds()
         val randomDigits = Random.nextInt(1000, 9999)
         val inviteCode = "NEB-$randomDigits"
         val geofenceDto = geofenceMapper.toDto(geofence)
 
-        val profile = userSessionManager.currentProfile.value
-        val initials = profile.displayName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "OP" }
+        val profile = userRepository.getCurrentProfile()
+        val initials = profile.initials.ifBlank { "OP" }
         val leaderMember = MemberDto(
             id = profile.userId,
             name = profile.displayName,
@@ -123,9 +123,9 @@ class TrackingGroupRepositoryImpl(
 
     override suspend fun joinTrackingGroup(groupCode: String): Result<TrackingGroup> {
         val sanitizedCode = groupCode.trim().uppercase()
-        val now = Clock.System.now().toEpochMilliseconds()
-        val profile = userSessionManager.currentProfile.value
-        val initials = profile.displayName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
+        val now = DateTimeClock.System.now().toEpochMilliseconds()
+        val profile = userRepository.getCurrentProfile()
+        val initials = profile.initials.ifBlank { "MB" }
 
         val newMember = MemberDto(
             id = profile.userId,

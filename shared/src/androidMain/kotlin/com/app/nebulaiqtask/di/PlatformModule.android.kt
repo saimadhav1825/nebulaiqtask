@@ -1,12 +1,25 @@
 package com.app.nebulaiqtask.di
 
-import com.app.nebulaiqtask.data.auth.FirebaseAuthManager
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.app.nebulaiqtask.data.auth.PlatformAuthManager
+import com.app.nebulaiqtask.data.datastore.USER_PREFERENCES_DATASTORE_FILE
+import com.app.nebulaiqtask.data.datastore.createDataStore
 import com.app.nebulaiqtask.presentation.platform.*
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
 actual val platformModule: Module = module {
-    single { FirebaseAuthManager(get()) }
+    single { PlatformAuthManager() }
+    single<DataStore<Preferences>> {
+        val context: Context = get()
+        createDataStore(
+            producePath = {
+                context.filesDir.resolve(USER_PREFERENCES_DATASTORE_FILE).absolutePath
+            }
+        )
+    }
     single { PlatformNotificationManager(get()) }
     single { PlatformLocationTracker(get()) }
     single { PlatformPermissionManager(get()) }

@@ -82,6 +82,10 @@ kotlin {
 
             // Real system timestamps
             implementation(libs.kotlinx.datetime)
+
+            // Jetpack DataStore Preferences Multiplatform & Okio
+            implementation(libs.datastore.preferences)
+            implementation(libs.okio)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -91,6 +95,11 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+
+    // Firebase Auth for FirebaseAuthManager in androidMain source set
+    add("androidMainImplementation", platform(libs.firebase.bom))
+    add("androidMainImplementation", libs.firebase.auth)
+    add("androidMainImplementation", libs.kotlinx.coroutines.play.services)
 }
 
 tasks.matching { it.name.startsWith("check") && it.name.endsWith("AarMetadata") }.configureEach {

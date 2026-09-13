@@ -10,18 +10,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.app.nebulaiqtask.data.auth.FirebaseAuthManager
-import com.app.nebulaiqtask.data.session.UserSessionManager
+import androidx.lifecycle.lifecycleScope
+import com.app.nebulaiqtask.domain.usecase.InitializeUserSessionUseCase
 import com.app.nebulaiqtask.service.GeofenceForegroundService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
 
-    private val userSessionManager: UserSessionManager by inject()
-    private val firebaseAuthManager: FirebaseAuthManager by inject()
+    private val initializeUserSessionUseCase: InitializeUserSessionUseCase by inject()
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -36,36 +33,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        // Sign in with Firebase Anonymous Auth and initialize the session
-        initializeUserSession()
+        // Initialize user session via domain Use Case (backed by Firebase Auth & Jetpack DataStore)
+        lifecycleScope.launch {
+            try {
+                initializeUserSessionUseCase()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
 
         checkAndRequestPermissions()
 
         setContent {
             App()
-        }
-    }
-
-    /**
-     * Performs Firebase Anonymous Auth on every launch.
-     * The UID is stable and persists across sessions — Firebase re-uses
-     * the same anonymous account once created on the device.
-     * After auth, UserSessionManager is initialized with the real UID
-     * and any saved display name from SharedPreferences.
-     */
-    private fun initializeUserSession() {
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-                val uid = firebaseAuthManager.signInAnonymously()
-                val savedName = firebaseAuthManager.getDisplayName() ?: "User ${uid.take(4)}"
-                userSessionManager.initialize(userId = uid, displayName = savedName)
-            } catch (e: Exception) {
-                // If Firebase is unreachable, fall back to a device-local ID
-                val fallbackId = firebaseAuthManager.getCurrentUserId()
-                    ?: "local_${android.os.Build.FINGERPRINT.hashCode().toString(16)}"
-                val savedName = firebaseAuthManager.getDisplayName() ?: "Operator"
-                userSessionManager.initialize(userId = fallbackId, displayName = savedName)
-            }
         }
     }
 

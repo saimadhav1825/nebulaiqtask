@@ -3,7 +3,6 @@ package com.app.nebulaiqtask.presentation.feature.home.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.nebulaiqtask.data.session.UserSessionManager
 import com.app.nebulaiqtask.domain.usecase.*
 import com.app.nebulaiqtask.presentation.feature.home.effect.HomeEffect
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
@@ -33,7 +32,10 @@ class HomeViewModel(
     private val toggleTrackingUseCase: ToggleTrackingUseCase,
     private val getActiveAlertsUseCase: GetActiveAlertsUseCase,
     private val updateMemberLocationUseCase: UpdateMemberLocationUseCase,
-    private val userSessionManager: UserSessionManager,
+    private val observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    private val initializeUserSessionUseCase: InitializeUserSessionUseCase,
+    private val updateDisplayNameUseCase: UpdateDisplayNameUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val permissionManager: PlatformPermissionManager,
     private val locationTracker: PlatformLocationTracker,
     private val deviceTelemetry: PlatformDeviceTelemetry,
@@ -54,8 +56,8 @@ class HomeViewModel(
             hasNotificationPermission = permissionManager.hasNotificationPermission(),
             deviceBatteryPercent = deviceTelemetry.getBatteryPercentage(),
             useRealDeviceGps = true,
-            currentUserId = userSessionManager.getUserId(),
-            currentUserName = userSessionManager.getDisplayName()
+            currentUserId = "",
+            currentUserName = ""
         )
     )
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -69,6 +71,24 @@ class HomeViewModel(
     private var gpsTrackingJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            try {
+                initializeUserSessionUseCase()
+            } catch (e: Exception) {
+                // Initial session error handled gracefully
+            }
+        }
+        viewModelScope.launch {
+            observeCurrentUserUseCase().collect { profile ->
+                _state.update {
+                    it.copy(
+                        currentUserId = profile.userId,
+                        currentUserName = profile.displayName
+                    )
+                }
+            }
+        }
+
         // Only observe group data if a group ID is already known
         if (activeGroupId != null) {
             observeGroupData()
@@ -347,7 +367,7 @@ class HomeViewModel(
         gpsTrackingJob = viewModelScope.launch {
             locationTracker.startLocationUpdates().collectLatest { realCoord ->
                 val group = _state.value.activeGroup
-                val myUserId = userSessionManager.getUserId()
+                val myUserId = _state.value.currentUserId
                 val battery = deviceTelemetry.getBatteryPercentage()
 
                 if (group != null) {

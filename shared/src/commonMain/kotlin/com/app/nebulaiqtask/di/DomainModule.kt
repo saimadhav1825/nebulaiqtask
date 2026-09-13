@@ -18,4 +18,10 @@ val domainModule = module {
     factory { ToggleTrackingUseCase(get()) }
     factory { TriggerMemberExitUseCase(get()) }
     factory { TriggerMemberReturnUseCase(get()) }
+
+    // User & Session Use Cases
+    factory { ObserveCurrentUserUseCase(get()) }
+    factory { GetCurrentUserUseCase(get()) }
+    factory { InitializeUserSessionUseCase(get()) }
+    factory { UpdateDisplayNameUseCase(get()) }
 }

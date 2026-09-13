@@ -12,7 +12,7 @@ import com.app.nebulaiqtask.presentation.feature.creategroup.state.CreateGroupSt
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Clock as DateTimeClock
 
 class CreateGroupViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -90,7 +90,7 @@ class CreateGroupViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isSubmitting = true) }
             try {
-                val now = Clock.System.now().toEpochMilliseconds()
+                val now = DateTimeClock.System.now().toEpochMilliseconds()
                 val geofence = GeofenceZone(
                     id = "fence_${now}",
                     name = s.geofenceName,

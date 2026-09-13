@@ -2,6 +2,7 @@ package com.app.nebulaiqtask.di
 
 import com.app.nebulaiqtask.data.datasource.FirebaseGroupDataSource
 import com.app.nebulaiqtask.data.datasource.LocalGroupDataSource
+import com.app.nebulaiqtask.data.datasource.UserPreferencesDataSource
 import com.app.nebulaiqtask.data.mapper.*
 import com.app.nebulaiqtask.data.repository.*
 import com.app.nebulaiqtask.data.session.UserSessionManager
@@ -17,15 +18,18 @@ val dataModule = module {
     single { AlertMapper(get()) }
     single { NotificationEventMapper() }
 
-    // Session & Data Sources
-    single { UserSessionManager() }
+    // Data Sources
+    single { UserPreferencesDataSource(get()) }
     single { FirebaseGroupDataSource() }
     single { LocalGroupDataSource() }
 
-    // Repositories
+    // User Repository backed by DataStore and PlatformAuthManager
+    single<UserRepository> { UserRepositoryImpl(get(), get()) }
+    single { UserSessionManager(get()) }
+
+    // Domain Repositories
     single<TrackingGroupRepository> { TrackingGroupRepositoryImpl(get(), get(), get(), get(), get()) }
     single<MemberRepository> { MemberRepositoryImpl(get(), get(), get(), get()) }
     single<GeofenceTrackerRepository> { GeofenceTrackerRepositoryImpl(get(), get(), get()) }
     single<NotificationRepository> { NotificationRepositoryImpl(get(), get(), get()) }
 }
-

@@ -22,6 +22,8 @@ maplibre-compose = "0.16.0"
 ktor = "3.1.1"
 firebase-bom = "33.12.0"
 kotlinx-datetime = "0.6.2"
+datastore = "1.1.7"
+okio = "3.10.2"
 
 [libraries]
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -72,6 +74,10 @@ kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-cor
 
 # DateTime
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
+# DataStore & Okio
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
