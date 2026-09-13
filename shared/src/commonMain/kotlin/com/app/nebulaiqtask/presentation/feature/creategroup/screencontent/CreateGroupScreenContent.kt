@@ -45,7 +45,11 @@ fun CreateGroupScreenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onIntent(CreateGroupIntent.OnBackClicked) }) {
-                        Text("←", fontSize = 20.sp, color = NebulaColors.TextPrimary)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = NebulaColors.TextPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = NebulaColors.DeepBackground)
@@ -70,10 +74,10 @@ fun CreateGroupScreenContent(
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "1. GROUP DETAILS",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NebulaColors.TextSecondary
+                        text = "Group Details",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = NebulaColors.TextPrimary
                     )
 
                     OutlinedTextField(
@@ -91,7 +95,7 @@ fun CreateGroupScreenContent(
                     )
 
                     Text(
-                        text = "Creates a real tracking group, generates a shareable 6-character Invite Code for other devices, and enables real-time Firebase sync.",
+                        text = "Creates a tracking group, generates an invite code, and enables real-time location sync.",
                         fontSize = 11.sp,
                         color = NebulaColors.TextSecondary
                     )
@@ -108,10 +112,10 @@ fun CreateGroupScreenContent(
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
-                        text = "2. GEOFENCE CONFIGURATION",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NebulaColors.TextSecondary
+                        text = "Geofence Configuration",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = NebulaColors.TextPrimary
                     )
 
                     OutlinedTextField(

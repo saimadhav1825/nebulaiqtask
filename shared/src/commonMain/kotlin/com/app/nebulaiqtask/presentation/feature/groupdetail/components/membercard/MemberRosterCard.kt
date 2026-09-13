@@ -82,12 +82,21 @@ fun MemberRosterCard(
                                     .border(0.8.dp, Color(0xFFFDE68A), RoundedCornerShape(6.dp))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text(
-                                    text = "👑 Owner",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB45309)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = androidx.compose.material.icons.Icons.Default.Star,
+                                        contentDescription = "Owner",
+                                        tint = Color(0xFFB45309),
+                                        modifier = Modifier.size(11.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = "Owner",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFB45309)
+                                    )
+                                }
                             }
                         }
                         if (member.isLocalUser) {
@@ -121,12 +130,21 @@ fun MemberRosterCard(
                         )
                         .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
-                    Text(
-                        text = if (isBreached) "BREACH (+${member.distanceToFenceMeters.toInt()}m)" else "INSIDE",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = if (isBreached) androidx.compose.material.icons.Icons.Default.Warning else androidx.compose.material.icons.Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (isBreached) "+${member.distanceToFenceMeters.toInt()}m Outside" else "Inside",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
+                        )
+                    }
                 }
             }
 
@@ -144,16 +162,31 @@ fun MemberRosterCard(
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Text("🛡️ Return to Safety", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Return to Safety", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
                     } else {
                         OutlinedButton(
                             onClick = onTriggerBreach,
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = NebulaColors.CriticalCrimson),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFCA5A5)),
                             shape = RoundedCornerShape(8.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Text("🚨 Simulate Exit", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.ExitToApp,
+                                contentDescription = null,
+                                tint = NebulaColors.CriticalCrimson,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Simulate Exit", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }

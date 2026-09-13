@@ -42,7 +42,11 @@ fun MemberDetailScreenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onIntent(MemberDetailIntent.OnBackClicked) }) {
-                        Text("←", fontSize = 20.sp, color = NebulaColors.TextPrimary)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = NebulaColors.TextPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = NebulaColors.DeepBackground)

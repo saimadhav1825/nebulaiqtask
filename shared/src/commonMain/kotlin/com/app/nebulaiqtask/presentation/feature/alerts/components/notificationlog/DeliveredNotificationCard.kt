@@ -33,7 +33,12 @@ fun DeliveredNotificationCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("📲", fontSize = 18.sp)
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.Notifications,
+                contentDescription = null,
+                tint = NebulaColors.PrimaryIndigo,
+                modifier = Modifier.size(20.dp)
+            )
 
             Spacer(modifier = Modifier.width(12.dp))
 
@@ -51,12 +56,21 @@ fun DeliveredNotificationCard(
                 )
             }
 
-            Text(
-                text = "✓ Pushed",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = NebulaColors.SafeEmerald
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Check,
+                    contentDescription = null,
+                    tint = NebulaColors.SafeEmerald,
+                    modifier = Modifier.size(13.dp)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "Delivered",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = NebulaColors.SafeEmerald
+                )
+            }
         }
     }
 }

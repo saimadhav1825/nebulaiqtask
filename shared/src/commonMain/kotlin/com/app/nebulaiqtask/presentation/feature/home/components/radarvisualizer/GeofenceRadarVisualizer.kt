@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -250,9 +251,9 @@ fun GeofenceRadarVisualizer(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "RADAR: ${geofence.radiusMeters.toInt()}m SAFE ZONE",
+                text = "Safe Zone: ${geofence.radiusMeters.toInt()}m",
                 fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = NebulaColors.TextSecondary
             )
         }
@@ -263,14 +264,21 @@ fun GeofenceRadarVisualizer(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(12.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFFEF2F2))
-                    .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFFFEF2F2))
+                .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(8.dp))
+                .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color(0xFFDC2626),
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "⚠️ $breachCount OUTSIDE",
+                    text = "$breachCount Outside",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFDC2626)

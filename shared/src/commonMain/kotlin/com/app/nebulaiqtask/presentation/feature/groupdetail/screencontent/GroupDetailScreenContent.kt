@@ -52,12 +52,20 @@ fun GroupDetailScreenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onIntent(GroupDetailIntent.OnBackClicked) }) {
-                        Text("←", fontSize = 20.sp, color = NebulaColors.TextPrimary)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = NebulaColors.TextPrimary
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { onIntent(GroupDetailIntent.OnViewAlertsClicked) }) {
-                        Text("🔔", fontSize = 18.sp)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Notifications,
+                            contentDescription = "Alerts",
+                            tint = NebulaColors.TextPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = NebulaColors.DeepBackground)

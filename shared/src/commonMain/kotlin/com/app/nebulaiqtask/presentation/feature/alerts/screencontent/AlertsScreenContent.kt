@@ -45,7 +45,11 @@ fun AlertsScreenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onIntent(AlertsIntent.OnBackClicked) }) {
-                        Text("←", fontSize = 20.sp, color = NebulaColors.TextPrimary)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = NebulaColors.TextPrimary
+                        )
                     }
                 },
                 actions = {
@@ -165,7 +169,12 @@ private fun EmptyStateBox(message: String) {
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("🛡️", fontSize = 36.sp)
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = NebulaColors.SafeEmerald,
+                    modifier = Modifier.size(44.dp)
+                )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "All Clear",

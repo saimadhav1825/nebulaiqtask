@@ -61,7 +61,7 @@ class MemberDetailViewModel(
                         if (check.generatedAlert != null) {
                             sendBreachNotificationUseCase(check.generatedAlert, "Field Operations", 9)
                         }
-                        _effect.send(MemberDetailEffect.ShowSnackbar("⚠️ Breach event triggered for ${breached.name}!"))
+                        _effect.send(MemberDetailEffect.ShowSnackbar("Breach event simulated for ${breached.name}."))
                     }
                 }
             }
@@ -71,14 +71,14 @@ class MemberDetailViewModel(
                     if (safe != null) {
                         _state.update { it.copy(member = safe) }
                         sendBreachNotificationUseCase.onMemberReturnedToSafety(groupId, safe.id, safe.name)
-                        _effect.send(MemberDetailEffect.ShowSnackbar("✅ ${safe.name} returned inside safe perimeter."))
+                        _effect.send(MemberDetailEffect.ShowSnackbar("${safe.name} returned inside safe perimeter."))
                     }
                 }
             }
             is MemberDetailIntent.SendPingAlert -> {
                 viewModelScope.launch {
                     val name = _state.value.member?.name ?: "Member"
-                    _effect.send(MemberDetailEffect.ShowSnackbar("📡 Ping sent to $name's device."))
+                    _effect.send(MemberDetailEffect.ShowSnackbar("Ping sent to $name's device."))
                 }
             }
             is MemberDetailIntent.OnBackClicked -> {

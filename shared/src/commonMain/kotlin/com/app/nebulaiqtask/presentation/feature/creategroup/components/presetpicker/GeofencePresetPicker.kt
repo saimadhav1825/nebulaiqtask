@@ -23,10 +23,10 @@ fun GeofencePresetPicker(
     modifier: Modifier = Modifier
 ) {
     val presets = listOf(
-        "🎯 Test (25m)",
-        "🏢 Campus (250m)",
-        "🌲 Park (600m)",
-        "🏫 School (150m)"
+        "Test (25m)",
+        "Campus (250m)",
+        "Park (600m)",
+        "School (150m)"
     )
 
     Column(modifier = modifier.fillMaxWidth()) {

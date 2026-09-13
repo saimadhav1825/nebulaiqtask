@@ -71,7 +71,7 @@ class GroupDetailViewModel(
                                 recipientCount = _state.value.members.size - 1
                             )
                         }
-                        _effect.send(GroupDetailEffect.ShowSnackbar("⚠️ ${breached.name} exited the geofence perimeter!"))
+                        _effect.send(GroupDetailEffect.ShowSnackbar("${breached.name} exited the geofence perimeter."))
                     }
                 }
             }
@@ -79,7 +79,7 @@ class GroupDetailViewModel(
                 viewModelScope.launch {
                     val safe = triggerMemberReturnUseCase(groupId, intent.memberId)
                     if (safe != null) {
-                        _effect.send(GroupDetailEffect.ShowSnackbar("✅ ${safe.name} is back inside the safety zone."))
+                        _effect.send(GroupDetailEffect.ShowSnackbar("${safe.name} is back inside the safe zone."))
                     }
                 }
             }

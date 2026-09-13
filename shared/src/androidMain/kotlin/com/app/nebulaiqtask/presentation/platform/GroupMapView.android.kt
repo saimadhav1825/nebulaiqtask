@@ -223,12 +223,21 @@ actual fun GroupMapView(
             )
             if (breachedMembersCount > 0) {
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "🚨 $breachedMembersCount BREACHED",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = NebulaColors.CriticalCrimson
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = NebulaColors.CriticalCrimson,
+                        modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = "$breachedMembersCount Outside",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NebulaColors.CriticalCrimson
+                    )
+                }
             }
         }
 
@@ -261,7 +270,12 @@ actual fun GroupMapView(
                         .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                         .border(1.dp, NebulaColors.CardBorder, CircleShape)
                 ) {
-                    Text("🎯", fontSize = 14.sp)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.LocationOn,
+                        contentDescription = "Recenter",
+                        tint = NebulaColors.PrimaryIndigo,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
 
                 // Zoom In
@@ -276,7 +290,12 @@ actual fun GroupMapView(
                         .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                         .border(1.dp, NebulaColors.CardBorder, CircleShape)
                 ) {
-                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = NebulaColors.TextPrimary)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                        contentDescription = "Zoom in",
+                        tint = NebulaColors.TextPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
 
                 // Zoom Out
@@ -291,7 +310,12 @@ actual fun GroupMapView(
                         .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                         .border(1.dp, NebulaColors.CardBorder, CircleShape)
                 ) {
-                    Text("−", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = NebulaColors.TextPrimary)
+                    Box(
+                        modifier = Modifier
+                            .width(12.dp)
+                            .height(2.dp)
+                            .background(NebulaColors.TextPrimary, RoundedCornerShape(1.dp))
+                    )
                 }
             }
         }
@@ -357,7 +381,7 @@ private fun MemberMapPin(
                 )
             }
 
-            // Owner Crown Badge anchored on top-right corner
+            // Owner Star Badge anchored on top-right corner
             if (isOwner) {
                 Box(
                     modifier = Modifier
@@ -369,7 +393,12 @@ private fun MemberMapPin(
                         .border(1.dp, Color(0xFFF59E0B), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("👑", fontSize = 9.sp)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Star,
+                        contentDescription = "Owner",
+                        tint = Color(0xFFB45309),
+                        modifier = Modifier.size(10.dp)
+                    )
                 }
             }
         }
@@ -389,8 +418,8 @@ private fun MemberMapPin(
         }
         val labelText = when {
             isBreached -> "$firstName (+${member.distanceToFenceMeters.toInt()}m)"
-            isOwner && member.isLocalUser -> "👑 $firstName (Owner • You)"
-            isOwner -> "👑 $firstName (Owner)"
+            isOwner && member.isLocalUser -> "$firstName (Owner • You)"
+            isOwner -> "$firstName (Owner)"
             member.isLocalUser -> "$firstName (You)"
             else -> firstName
         }
@@ -408,12 +437,31 @@ private fun MemberMapPin(
                 .border(0.8.dp, badgeBorderColor, RoundedCornerShape(6.dp))
                 .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
-            Text(
-                text = labelText,
-                color = textColor,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isOwner) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Star,
+                        contentDescription = null,
+                        tint = textColor,
+                        modifier = Modifier.size(9.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                } else if (isBreached) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = textColor,
+                        modifier = Modifier.size(9.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                }
+                Text(
+                    text = labelText,
+                    color = textColor,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

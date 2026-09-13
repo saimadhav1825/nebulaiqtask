@@ -251,7 +251,7 @@ class HomeViewModel(
                                 recipientCount = _state.value.members.size - 1
                             )
                         }
-                        _effect.send(HomeEffect.ShowSnackbar("⚠️ Breach triggered for ${breached.name}! Group alerted."))
+                        _effect.send(HomeEffect.ShowSnackbar("Breach triggered for ${breached.name}. Group alerted."))
                     }
                 }
             }
@@ -265,7 +265,7 @@ class HomeViewModel(
                             memberId = safe.id,
                             memberName = safe.name
                         )
-                        _effect.send(HomeEffect.ShowSnackbar("✅ ${safe.name} returned inside safe perimeter."))
+                        _effect.send(HomeEffect.ShowSnackbar("${safe.name} returned inside safe perimeter."))
                     }
                 }
             }
@@ -358,9 +358,9 @@ class HomeViewModel(
                     )
                 }
                 observeGroupData()
-                _effect.send(HomeEffect.ShowSnackbar("🎉 Successfully joined group ${joinedGroup.name} ($code)"))
+                _effect.send(HomeEffect.ShowSnackbar("Joined group ${joinedGroup.name} ($code)"))
             }.onFailure { error ->
-                _effect.send(HomeEffect.ShowSnackbar("❌ Failed to join group: ${error.message ?: "Invalid code"}"))
+                _effect.send(HomeEffect.ShowSnackbar("Failed to join group: ${error.message ?: "Invalid code"}"))
             }
         }
     }
@@ -378,9 +378,9 @@ class HomeViewModel(
             _state.update { it.copy(isSubmittingAction = false, isAddMemberDialogVisible = false) }
 
             result.onSuccess { newMember ->
-                _effect.send(HomeEffect.ShowSnackbar("✅ Added ${newMember.name} to the group!"))
+                _effect.send(HomeEffect.ShowSnackbar("Added ${newMember.name} to the group."))
             }.onFailure { error ->
-                _effect.send(HomeEffect.ShowSnackbar("❌ Failed to add member: ${error.message}"))
+                _effect.send(HomeEffect.ShowSnackbar("Failed to add member: ${error.message}"))
             }
         }
     }

@@ -356,14 +356,14 @@ fun HomeScreenContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "REAL MEMBERS ROSTER (${state.members.size})",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = NebulaColors.TextSecondary
+                                text = "Members (${state.members.size})",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = NebulaColors.TextPrimary
                             )
 
                             Text(
-                                text = "Manage →",
+                                text = "Manage",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = NebulaColors.PrimaryIndigo,
@@ -394,7 +394,7 @@ fun HomeScreenContent(
             containerColor = NebulaColors.SurfaceDark,
             title = {
                 Text(
-                    text = "🔗 Join Tracking Group",
+                    text = "Join Tracking Group",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = NebulaColors.TextPrimary
@@ -451,7 +451,7 @@ fun HomeScreenContent(
             containerColor = NebulaColors.SurfaceDark,
             title = {
                 Text(
-                    text = "👤 Add Member to Group",
+                    text = "Add Member to Group",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = NebulaColors.TextPrimary
@@ -518,12 +518,12 @@ fun HomeScreenContent(
                 Button(
                     onClick = { onIntent(HomeIntent.SubmitAddMember) },
                     enabled = state.newMemberNameInput.isNotBlank() && !state.isSubmittingAction,
-                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.AccentCyan)
+                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo)
                 ) {
                     if (state.isSubmittingAction) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp))
                     } else {
-                        Text("Add Member", color = NebulaColors.DeepBackground, fontWeight = FontWeight.Bold)
+                        Text("Add Member")
                     }
                 }
             },
@@ -599,7 +599,16 @@ private fun MemberRowItem(
                                 .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
-                            Text("👑 Owner", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = NebulaColors.GoldOwner)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.Star,
+                                    contentDescription = "Owner",
+                                    tint = NebulaColors.GoldOwner,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text("Owner", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = NebulaColors.GoldOwner)
+                            }
                         }
                     } else if (member.isLocalUser) {
                         Spacer(modifier = Modifier.width(6.dp))
@@ -612,9 +621,9 @@ private fun MemberRowItem(
                     }
                 }
                 val batteryDisplay = if (member.isLocalUser && deviceBatteryPercent > 0) {
-                    "🔋 $deviceBatteryPercent%"
+                    "Battery: $deviceBatteryPercent%"
                 } else {
-                    "🔋 ${member.batteryPercent}%"
+                    "Battery: ${member.batteryPercent}%"
                 }
                 Text(
                     text = "${member.role.name.replace("_", " ")} • $batteryDisplay",
@@ -637,14 +646,22 @@ private fun MemberRowItem(
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                Text(
-                    text = if (isBreached) "+${member.distanceToFenceMeters.toInt()}m OUT" else "SAFE",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (isBreached) androidx.compose.material.icons.Icons.Default.Warning else androidx.compose.material.icons.Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (isBreached) "+${member.distanceToFenceMeters.toInt()}m Outside" else "Inside",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
+                    )
+                }
             }
         }
     }
 }
-

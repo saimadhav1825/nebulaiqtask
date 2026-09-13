@@ -40,8 +40,15 @@ fun AlertIncidentCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (!alert.isAcknowledged) androidx.compose.material.icons.Icons.Default.Warning else androidx.compose.material.icons.Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = if (!alert.isAcknowledged) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (!alert.isAcknowledged) "⚠️ ACTIVE BREACH" else "✅ RESOLVED",
+                        text = if (!alert.isAcknowledged) "Active Breach" else "Resolved",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (!alert.isAcknowledged) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
