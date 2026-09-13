@@ -66,15 +66,14 @@ fun HomeScreenContent(
                     ) {
                         Column {
                             Text(
-                                text = "NEBULA TRACKING",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.5.sp,
+                                text = "Geofence Tracker",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
                                 color = NebulaColors.PrimaryIndigo
                             )
                             Text(
-                                text = "Live Geofence",
-                                fontSize = 24.sp,
+                                text = "Live Monitoring",
+                                fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = NebulaColors.TextPrimary
                             )
@@ -203,14 +202,28 @@ fun HomeScreenContent(
                                         colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
                                         shape = RoundedCornerShape(10.dp)
                                     ) {
-                                        Text("+ Create Group", color = Color.White)
+                                        Icon(
+                                            imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Create Group", color = Color.White)
                                     }
                                     OutlinedButton(
                                         onClick = { onIntent(HomeIntent.ShowJoinGroupDialog(true)) },
                                         border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
                                         shape = RoundedCornerShape(10.dp)
                                     ) {
-                                        Text("🔗 Join with Code", color = NebulaColors.TextPrimary)
+                                        Icon(
+                                            imageVector = androidx.compose.material.icons.Icons.Default.Share,
+                                            contentDescription = null,
+                                            tint = NebulaColors.TextPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Join with Code", color = NebulaColors.TextPrimary)
                                     }
                                 }
                             }
@@ -249,12 +262,21 @@ fun HomeScreenContent(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        text = "🗺️ Live Map",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (state.viewMode == HomeViewMode.MAP) NebulaColors.TextPrimary else NebulaColors.TextSecondary
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = androidx.compose.material.icons.Icons.Default.Place,
+                                            contentDescription = null,
+                                            tint = if (state.viewMode == HomeViewMode.MAP) NebulaColors.PrimaryIndigo else NebulaColors.TextSecondary,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "Map View",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (state.viewMode == HomeViewMode.MAP) NebulaColors.TextPrimary else NebulaColors.TextSecondary
+                                        )
+                                    }
                                 }
 
                                 Box(
@@ -266,12 +288,21 @@ fun HomeScreenContent(
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        text = "📡 Radar Canvas",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (state.viewMode == HomeViewMode.RADAR) NebulaColors.TextPrimary else NebulaColors.TextSecondary
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = androidx.compose.material.icons.Icons.Default.LocationOn,
+                                            contentDescription = null,
+                                            tint = if (state.viewMode == HomeViewMode.RADAR) NebulaColors.PrimaryIndigo else NebulaColors.TextSecondary,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "Radar View",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (state.viewMode == HomeViewMode.RADAR) NebulaColors.TextPrimary else NebulaColors.TextSecondary
+                                        )
+                                    }
                                 }
                             }
 

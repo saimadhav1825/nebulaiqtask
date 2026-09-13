@@ -51,18 +51,18 @@ fun HomeQuickActions(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "GEOFENCE & MULTI-DEVICE CONTROLS",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = NebulaColors.TextSecondary
+                    text = "Geofence & Device Controls",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = NebulaColors.TextPrimary
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = if (isTrackingActive) "Active" else "Paused",
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         color = if (isTrackingActive) NebulaColors.SafeEmerald else NebulaColors.WarningAmber,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Medium
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Switch(
@@ -93,14 +93,21 @@ fun HomeQuickActions(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📍 Hardware GPS Chip", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NebulaColors.TextPrimary)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = NebulaColors.PrimaryIndigo,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Device GPS Hardware", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NebulaColors.TextPrimary)
                         if (useRealDeviceGps) {
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("LIVE SYNC", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = NebulaColors.AccentCyan)
+                            Text("LIVE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = NebulaColors.AccentCyan)
                         }
                     }
                     Text(
-                        text = if (useRealDeviceGps) "Streaming your real physical GPS to Firebase" else "GPS streaming paused",
+                        text = if (useRealDeviceGps) "Streaming coordinates to group" else "GPS streaming paused",
                         fontSize = 11.sp,
                         color = NebulaColors.TextSecondary
                     )
@@ -127,7 +134,14 @@ fun HomeQuickActions(
                     colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("🔗 Join Group", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Share,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Join Group", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                 }
 
                 OutlinedButton(
@@ -137,7 +151,14 @@ fun HomeQuickActions(
                     border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("+ Add Member", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                        contentDescription = null,
+                        tint = NebulaColors.PrimaryIndigo,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Add Member", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -146,7 +167,7 @@ fun HomeQuickActions(
 
                 // Member Selector Bar for breach alert test
                 Text(
-                    text = "Test Geofence Breach on Member:",
+                    text = "Simulate Geofence Breach:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = NebulaColors.TextSecondary
@@ -168,13 +189,18 @@ fun HomeQuickActions(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = selectedMember?.let { "${it.name} (${if (it.isInsideGeofence) "Inside" else "OUTSIDE"})" }
+                            text = selectedMember?.let { "${it.name} (${if (it.isInsideGeofence) "Inside" else "Outside"})" }
                                 ?: "Select member",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = if (selectedMember?.isInsideGeofence == false) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary
                         )
-                        Text("▼", fontSize = 11.sp, color = NebulaColors.TextSecondary)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = NebulaColors.TextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
 
                     DropdownMenu(
@@ -186,7 +212,7 @@ fun HomeQuickActions(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        text = "${m.name} - ${if (m.isInsideGeofence) "Inside" else "OUTSIDE"}",
+                                        text = "${m.name} - ${if (m.isInsideGeofence) "Inside" else "Outside"}",
                                         color = if (!m.isInsideGeofence) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary
                                     )
                                 },
@@ -211,7 +237,14 @@ fun HomeQuickActions(
                         colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.CriticalCrimson),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("🚨 Test Exit Breach", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.ExitToApp,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Simulate Exit", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                     }
 
                     Button(
@@ -222,7 +255,14 @@ fun HomeQuickActions(
                         colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.SafeEmerald),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("🛡️ Return Safe", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Return Safe", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                     }
                 }
             }
@@ -238,7 +278,14 @@ fun HomeQuickActions(
                     border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = NebulaColors.TextPrimary)
                 ) {
-                    Text("📋 Incident Log", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = NebulaColors.TextPrimary,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Incident Log", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 Button(
@@ -247,7 +294,14 @@ fun HomeQuickActions(
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo)
                 ) {
-                    Text("+ New Group", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("New Group", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                 }
             }
         }

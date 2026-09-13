@@ -54,7 +54,12 @@ fun BreachAlertBanner(
                             .background(Color(0xFFFEE2E2)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("⚠️", fontSize = 18.sp)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                            contentDescription = "Breach Alert",
+                            tint = Color(0xFFDC2626),
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
