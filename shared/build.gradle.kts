@@ -73,7 +73,10 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
 
             // MapLibre Compose Multiplatform
-            implementation(libs.maplibre.compose)
+            implementation("org.maplibre.compose:maplibre-compose:${libs.versions.maplibre.compose.get()}") {
+                exclude(group = "org.jetbrains.compose.foundation")
+                exclude(group = "org.jetbrains.compose.components")
+            }
 
             // Ktor Networking for Firebase Realtime Sync
             implementation(libs.ktor.client.core)
