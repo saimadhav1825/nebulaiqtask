@@ -13,7 +13,7 @@ import com.app.nebulaiqtask.presentation.platform.PlatformLocationTracker
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock as DateTimeClock
+import kotlinx.datetime.Clock
 
 class CreateGroupViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -104,7 +104,7 @@ class CreateGroupViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isSubmitting = true) }
             try {
-                val now = DateTimeClock.System.now().toEpochMilliseconds()
+                val now = Clock.System.now().toEpochMilliseconds()
                 val geofence = GeofenceZone(
                     id = "fence_${now}",
                     name = s.geofenceName,

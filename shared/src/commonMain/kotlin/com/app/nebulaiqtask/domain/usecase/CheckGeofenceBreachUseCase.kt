@@ -35,14 +35,14 @@ class CheckGeofenceBreachUseCase {
         val isNowInside = GeoDistanceCalculator.isCoordinateInsideFence(member.currentLocation, fence)
         val distanceOutside = GeoDistanceCalculator.distanceOutsideFenceMeters(member.currentLocation, fence)
 
-        val isAlreadyAlerted = synchronized(activeBreachedMembers) { key in activeBreachedMembers }
+        val isAlreadyAlerted = key in activeBreachedMembers
 
         val transition = when {
             // 1. Member is safely inside the geofence
             isNowInside -> {
                 if (isAlreadyAlerted || !member.isInsideGeofence) {
                     // Transition: was outside, now returned safely inside
-                    synchronized(activeBreachedMembers) { activeBreachedMembers.remove(key) }
+                    activeBreachedMembers.remove(key)
                     GeofenceTransition.TRANSITION_ENTER
                 } else {
                     GeofenceTransition.NONE
@@ -52,15 +52,15 @@ class CheckGeofenceBreachUseCase {
             else -> {
                 if (isInitialJoinOrSync) {
                     // Initial join or initial sync while already outside: mark as breached but DO NOT fire notification
-                    synchronized(activeBreachedMembers) { activeBreachedMembers.add(key) }
+                    activeBreachedMembers.add(key)
                     GeofenceTransition.NONE
                 } else if (!isAlreadyAlerted && member.isInsideGeofence) {
                     // Genuine exit transition: was previously inside, now stepped outside
-                    synchronized(activeBreachedMembers) { activeBreachedMembers.add(key) }
+                    activeBreachedMembers.add(key)
                     GeofenceTransition.TRANSITION_EXIT
                 } else {
                     // Already outside or already alerted: keep in set, no duplicate transition or alert
-                    synchronized(activeBreachedMembers) { activeBreachedMembers.add(key) }
+                    activeBreachedMembers.add(key)
                     GeofenceTransition.NONE
                 }
             }
@@ -93,18 +93,14 @@ class CheckGeofenceBreachUseCase {
 
     fun markAsInitiallyOutside(groupId: String, memberId: String) {
         val key = "$groupId:$memberId"
-        synchronized(activeBreachedMembers) {
-            activeBreachedMembers.add(key)
-        }
+        activeBreachedMembers.add(key)
     }
 
     fun resetBreachState(groupId: String, memberId: String? = null) {
-        synchronized(activeBreachedMembers) {
-            if (memberId != null) {
-                activeBreachedMembers.remove("$groupId:$memberId")
-            } else {
-                activeBreachedMembers.removeAll { it.startsWith("$groupId:") }
-            }
+        if (memberId != null) {
+            activeBreachedMembers.remove("$groupId:$memberId")
+        } else {
+            activeBreachedMembers.removeAll { it.startsWith("$groupId:") }
         }
     }
 }
