@@ -124,11 +124,14 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = membersList.size - 1
                             )
-                            notificationManager.showBreachNotification(
+                            notificationManager.showHeadsUpBreachNotification(
                                 title = "🚨 GEOFENCE BREACH: ${member.name}",
-                                message = "${member.name} exited ${group.geofence.name} (+${result.distanceOutsideMeters.toInt()}m)!"
+                                message = "${member.name} exited ${group.geofence.name} (+${result.distanceOutsideMeters.toInt()}m)!",
+                                breachDistanceMeters = result.distanceOutsideMeters,
+                                memberName = member.name
                             )
                             notificationManager.playBreachAlertHapticAndAudio()
+
                         }
                     }
                 }
@@ -205,9 +208,11 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = _state.value.members.size - 1
                             )
-                            notificationManager.showBreachNotification(
+                            notificationManager.showHeadsUpBreachNotification(
                                 title = "🚨 GEOFENCE BREACH: ${breached.name}",
-                                message = "${breached.name} stepped outside ${group.geofence.name}!"
+                                message = "${breached.name} stepped outside ${group.geofence.name}!",
+                                breachDistanceMeters = check.distanceOutsideMeters,
+                                memberName = breached.name
                             )
                             notificationManager.playBreachAlertHapticAndAudio()
                         }
@@ -360,9 +365,11 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = _state.value.members.size - 1
                             )
-                            notificationManager.showBreachNotification(
+                            notificationManager.showHeadsUpBreachNotification(
                                 title = "🚨 GEOFENCE BREACH: YOU EXITED!",
-                                message = "You are outside ${group.geofence.name} by ${check.distanceOutsideMeters.toInt()}m!"
+                                message = "You are outside ${group.geofence.name} by ${check.distanceOutsideMeters.toInt()}m!",
+                                breachDistanceMeters = check.distanceOutsideMeters,
+                                memberName = localMember.name
                             )
                             notificationManager.playBreachAlertHapticAndAudio()
                         }

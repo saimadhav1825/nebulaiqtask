@@ -3,7 +3,6 @@ package com.app.nebulaiqtask.data.repository
 import com.app.nebulaiqtask.data.datasource.FirebaseGroupDataSource
 import com.app.nebulaiqtask.data.datasource.LocalGroupDataSource
 import com.app.nebulaiqtask.data.dto.MemberDto
-import com.app.nebulaiqtask.data.dto.MemberRoleDto
 import com.app.nebulaiqtask.data.mapper.LocationMapper
 import com.app.nebulaiqtask.data.mapper.MemberMapper
 import com.app.nebulaiqtask.domain.model.GroupMember
@@ -83,19 +82,15 @@ class MemberRepositoryImpl(
         val colors = listOf(0xFF6366F1, 0xFF06B6D4, 0xFF10B981, 0xFFF59E0B, 0xFFEC4899, 0xFF8B5CF6)
         val color = colors[Random.nextInt(colors.size)]
         val now = 1726218000000L + (0..100000).random()
-
-        val roleDto = when (role) {
-            MemberRole.LEADER -> MemberRoleDto.LEADER
-            MemberRole.SCOUT -> MemberRoleDto.SCOUT
-            MemberRole.OPERATOR -> MemberRoleDto.OPERATOR
-            MemberRole.MEMBER -> MemberRoleDto.MEMBER
-        }
+        val memberName = name.ifBlank { "Member $randomDigits" }
+        val initials = memberName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
 
         val newMember = MemberDto(
             id = memberId,
-            name = name.ifBlank { "Member $randomDigits" },
-            role = roleDto,
+            name = memberName,
+            role = role.name,
             avatarColorHex = color,
+            initials = initials,
             currentLocation = group.geofence.center,
             batteryPercent = Random.nextInt(75, 100),
             isInsideGeofence = true,

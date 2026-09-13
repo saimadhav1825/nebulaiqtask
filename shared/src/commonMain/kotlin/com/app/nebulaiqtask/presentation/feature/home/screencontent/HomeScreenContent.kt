@@ -453,7 +453,7 @@ fun HomeScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        listOf(MemberRole.MEMBER, MemberRole.SCOUT, MemberRole.OPERATOR).forEach { role ->
+                        listOf(MemberRole.MEMBER, MemberRole.SAFETY_OFFICER, MemberRole.NAVIGATOR).forEach { role ->
                             val isSelected = state.newMemberRole == role
                             Box(
                                 modifier = Modifier
@@ -466,14 +466,15 @@ fun HomeScreenContent(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = role.name,
-                                    fontSize = 10.sp,
+                                    text = role.name.replace("_", " "),
+                                    fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isSelected) Color.White else NebulaColors.TextSecondary
                                 )
                             }
                         }
                     }
+
                 }
             },
             confirmButton = {

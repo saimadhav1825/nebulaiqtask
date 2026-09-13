@@ -4,7 +4,6 @@ import com.app.nebulaiqtask.data.datasource.FirebaseGroupDataSource
 import com.app.nebulaiqtask.data.datasource.LocalGroupDataSource
 import com.app.nebulaiqtask.data.dto.GroupDto
 import com.app.nebulaiqtask.data.dto.MemberDto
-import com.app.nebulaiqtask.data.dto.MemberRoleDto
 import com.app.nebulaiqtask.data.mapper.GeofenceMapper
 import com.app.nebulaiqtask.data.mapper.GroupMapper
 import com.app.nebulaiqtask.data.session.UserSessionManager
@@ -83,11 +82,13 @@ class TrackingGroupRepositoryImpl(
         val geofenceDto = geofenceMapper.toDto(geofence)
 
         val profile = userSessionManager.currentProfile.value
+        val initials = profile.displayName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "OP" }
         val leaderMember = MemberDto(
             id = profile.userId,
             name = profile.displayName,
-            role = MemberRoleDto.LEADER,
+            role = "LEADER",
             avatarColorHex = profile.avatarColorHex,
+            initials = initials,
             currentLocation = geofenceDto.center,
             batteryPercent = 100,
             isInsideGeofence = true,
@@ -123,12 +124,14 @@ class TrackingGroupRepositoryImpl(
         val sanitizedCode = groupCode.trim().uppercase()
         val now = 1726218000000L + (0..100000).random()
         val profile = userSessionManager.currentProfile.value
+        val initials = profile.displayName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase().take(2).ifBlank { "MB" }
 
         val newMember = MemberDto(
             id = profile.userId,
             name = profile.displayName,
-            role = MemberRoleDto.MEMBER,
+            role = "MEMBER",
             avatarColorHex = profile.avatarColorHex,
+            initials = initials,
             currentLocation = localDataSource.userLiveLocation.value ?: com.app.nebulaiqtask.data.dto.LocationDto(37.7749, -122.4194, 3.5f, now),
             batteryPercent = 100,
             isInsideGeofence = true,
