@@ -60,6 +60,7 @@ fun MemberBreachActionCard(
                 onClick = onSendPing,
                 modifier = Modifier.fillMaxWidth().height(46.dp),
                 shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = NebulaColors.AccentCyan)
             ) {
                 Text("📡 Ping Member Device", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)

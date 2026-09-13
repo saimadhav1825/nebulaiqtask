@@ -125,7 +125,7 @@ actual fun GroupMapView(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF0F172A))
+            .background(NebulaColors.SurfaceDark)
             .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(20.dp))
     ) {
         // MapLibre Interactive Native Map View
@@ -203,7 +203,7 @@ actual fun GroupMapView(
                 .align(Alignment.TopStart)
                 .padding(12.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(NebulaColors.SurfaceDark.copy(alpha = 0.92f))
+                .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                 .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(12.dp))
                 .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -258,7 +258,7 @@ actual fun GroupMapView(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(NebulaColors.SurfaceDark.copy(alpha = 0.9f))
+                        .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                         .border(1.dp, NebulaColors.CardBorder, CircleShape)
                 ) {
                     Text("🎯", fontSize = 14.sp)
@@ -273,10 +273,10 @@ actual fun GroupMapView(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(NebulaColors.SurfaceDark.copy(alpha = 0.9f))
+                        .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                         .border(1.dp, NebulaColors.CardBorder, CircleShape)
                 ) {
-                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = NebulaColors.TextPrimary)
                 }
 
                 // Zoom Out
@@ -288,10 +288,10 @@ actual fun GroupMapView(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(NebulaColors.SurfaceDark.copy(alpha = 0.9f))
+                        .background(NebulaColors.SurfaceDark.copy(alpha = 0.95f))
                         .border(1.dp, NebulaColors.CardBorder, CircleShape)
                 ) {
-                    Text("−", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("−", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = NebulaColors.TextPrimary)
                 }
             }
         }
@@ -333,7 +333,7 @@ private fun MemberMapPin(
             // Member avatar circle
             val borderColor = when {
                 isBreached -> NebulaColors.CriticalCrimson
-                isOwner -> Color(0xFFFFD700) // Vibrant Gold for Owner/Leader
+                isOwner -> Color(0xFFF59E0B) // Amber for Owner/Leader
                 member.isLocalUser -> NebulaColors.AccentCyan
                 else -> Color.White
             }
@@ -365,8 +365,8 @@ private fun MemberMapPin(
                         .offset(x = 2.dp, y = (-2).dp)
                         .size(16.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF1E1B4B))
-                        .border(1.dp, Color(0xFFFFD700), CircleShape),
+                        .background(Color(0xFFFFFBEB))
+                        .border(1.dp, Color(0xFFF59E0B), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("👑", fontSize = 9.sp)
@@ -376,14 +376,15 @@ private fun MemberMapPin(
 
         // Member label badge with Owner / You / Breach indicators
         val badgeBackground = when {
-            isBreached -> NebulaColors.CriticalCrimsonContainer.copy(alpha = 0.95f)
-            isOwner -> Color(0xFF2A2000).copy(alpha = 0.95f) // Golden amber container for Owner
-            else -> NebulaColors.SurfaceDark.copy(alpha = 0.95f)
+            isBreached -> Color(0xFFFEF2F2)
+            isOwner -> Color(0xFFFFFBEB) // Warm amber container for Owner
+            member.isLocalUser -> Color(0xFFEFF6FF) // Soft indigo/blue for You
+            else -> Color(0xFFFFFFFF)
         }
         val badgeBorderColor = when {
-            isBreached -> NebulaColors.CriticalCrimson
-            isOwner -> Color(0xFFFFD700)
-            member.isLocalUser -> NebulaColors.AccentCyan
+            isBreached -> Color(0xFFFCA5A5)
+            isOwner -> Color(0xFFFDE68A)
+            member.isLocalUser -> Color(0xFFBFDBFE)
             else -> NebulaColors.CardBorder
         }
         val labelText = when {
@@ -394,9 +395,9 @@ private fun MemberMapPin(
             else -> firstName
         }
         val textColor = when {
-            isBreached -> NebulaColors.CriticalCrimson
-            isOwner -> Color(0xFFFFE066)
-            member.isLocalUser -> NebulaColors.AccentCyan
+            isBreached -> Color(0xFFDC2626)
+            isOwner -> Color(0xFFB45309)
+            member.isLocalUser -> Color(0xFF1D4ED8)
             else -> NebulaColors.TextPrimary
         }
 
@@ -405,13 +406,13 @@ private fun MemberMapPin(
                 .clip(RoundedCornerShape(6.dp))
                 .background(badgeBackground)
                 .border(0.8.dp, badgeBorderColor, RoundedCornerShape(6.dp))
-                .padding(horizontal = 5.dp, vertical = 2.dp)
+                .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
             Text(
                 text = labelText,
                 color = textColor,
                 fontSize = 9.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontWeight = FontWeight.Bold
             )
         }
     }

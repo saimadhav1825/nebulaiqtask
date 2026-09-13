@@ -35,7 +35,7 @@ fun BreachAlertBanner(
                 modifier = modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
-                    .border(1.5.dp, NebulaColors.CriticalCrimson, RoundedCornerShape(16.dp)),
+                    .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(16.dp)),
                 colors = CardDefaults.cardColors(
                     containerColor = NebulaColors.CriticalCrimsonContainer
                 ),
@@ -49,31 +49,32 @@ fun BreachAlertBanner(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(42.dp)
+                            .size(40.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(NebulaColors.CriticalCrimson),
+                            .background(Color(0xFFFEE2E2)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("⚠️", fontSize = 20.sp)
+                        Text("⚠️", fontSize = 18.sp)
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "GEOFENCE BREACH DETECTED",
+                            text = "Geofence Breach Detected",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = Color.White
+                            color = Color(0xFF991B1B)
                         )
                         Text(
-                            text = "${alert.memberName} is ${alert.distanceOutsideMeters.toInt()}m outside the safe perimeter.",
+                            text = "${alert.memberName} is ${alert.distanceOutsideMeters.toInt()}m outside safe perimeter",
                             fontSize = 12.sp,
-                            color = NebulaColors.TextPrimary.copy(alpha = 0.9f)
+                            fontWeight = FontWeight.Medium,
+                            color = NebulaColors.TextPrimary
                         )
                         Text(
-                            text = "Notified ${alert.notifiedMembersCount} group members automatically",
-                            fontSize = 10.sp,
+                            text = "Notified ${alert.notifiedMembersCount} other members",
+                            fontSize = 11.sp,
                             color = NebulaColors.TextSecondary
                         )
                     }
@@ -83,7 +84,7 @@ fun BreachAlertBanner(
                     Button(
                         onClick = { onAcknowledge(alert.id) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = NebulaColors.DeepBackground,
+                            containerColor = NebulaColors.CriticalCrimson,
                             contentColor = Color.White
                         ),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),

@@ -66,15 +66,15 @@ fun HomeScreenContent(
                     ) {
                         Column {
                             Text(
-                                text = "NEBULA IQ",
+                                text = "NEBULA TRACKING",
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 2.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.5.sp,
                                 color = NebulaColors.PrimaryIndigo
                             )
                             Text(
-                                text = "Geofence Sentinel",
-                                fontSize = 22.sp,
+                                text = "Live Geofence",
+                                fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = NebulaColors.TextPrimary
                             )
@@ -85,7 +85,12 @@ fun HomeScreenContent(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(if (state.isTrackingActive) NebulaColors.SafeEmeraldContainer else NebulaColors.CardElevated)
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                                .border(
+                                    1.dp,
+                                    if (state.isTrackingActive) Color(0xFFA7F3D0) else NebulaColors.CardBorder,
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
@@ -96,10 +101,10 @@ fun HomeScreenContent(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (state.isTrackingActive) "${state.members.size} CONNECTED" else "PAUSED",
+                                text = if (state.isTrackingActive) "${state.members.size} Connected" else "Paused",
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (state.isTrackingActive) Color.White else NebulaColors.TextSecondary
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (state.isTrackingActive) NebulaColors.SafeEmerald else NebulaColors.TextSecondary
                             )
                         }
                     }
@@ -144,7 +149,7 @@ fun HomeScreenContent(
                                         Text(
                                             text = "${group.geofence.name} • ${group.geofence.radiusMeters.toInt()}m Radius",
                                             fontSize = 12.sp,
-                                            color = NebulaColors.AccentCyan
+                                            color = NebulaColors.TextSecondary
                                         )
                                     }
 
@@ -152,8 +157,8 @@ fun HomeScreenContent(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(NebulaColors.CardElevated)
-                                            .border(1.dp, NebulaColors.PrimaryIndigo, RoundedCornerShape(8.dp))
+                                            .background(NebulaColors.PrimaryContainer)
+                                            .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(8.dp))
                                             .padding(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
                                         Text(
@@ -198,13 +203,14 @@ fun HomeScreenContent(
                                         colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
                                         shape = RoundedCornerShape(10.dp)
                                     ) {
-                                        Text("+ Create Group")
+                                        Text("+ Create Group", color = Color.White)
                                     }
                                     OutlinedButton(
                                         onClick = { onIntent(HomeIntent.ShowJoinGroupDialog(true)) },
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
                                         shape = RoundedCornerShape(10.dp)
                                     ) {
-                                        Text("🔗 Join with Code")
+                                        Text("🔗 Join with Code", color = NebulaColors.TextPrimary)
                                     }
                                 }
                             }
@@ -224,21 +230,21 @@ fun HomeScreenContent(
                 if (group != null) {
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            // View Mode Toggle
+                            // View Mode Segmented Control
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(NebulaColors.SurfaceDark)
+                                    .background(NebulaColors.CardElevated)
                                     .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(12.dp))
-                                    .padding(4.dp),
+                                    .padding(3.dp),
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(if (state.viewMode == HomeViewMode.MAP) NebulaColors.PrimaryIndigo else Color.Transparent)
+                                        .clip(RoundedCornerShape(9.dp))
+                                        .background(if (state.viewMode == HomeViewMode.MAP) Color.White else Color.Transparent)
                                         .clickable { onIntent(HomeIntent.OnViewModeChanged(HomeViewMode.MAP)) }
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
@@ -246,16 +252,16 @@ fun HomeScreenContent(
                                     Text(
                                         text = "🗺️ Live Map",
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (state.viewMode == HomeViewMode.MAP) Color.White else NebulaColors.TextSecondary
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (state.viewMode == HomeViewMode.MAP) NebulaColors.TextPrimary else NebulaColors.TextSecondary
                                     )
                                 }
 
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(if (state.viewMode == HomeViewMode.RADAR) NebulaColors.PrimaryIndigo else Color.Transparent)
+                                        .clip(RoundedCornerShape(9.dp))
+                                        .background(if (state.viewMode == HomeViewMode.RADAR) Color.White else Color.Transparent)
                                         .clickable { onIntent(HomeIntent.OnViewModeChanged(HomeViewMode.RADAR)) }
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
@@ -263,8 +269,8 @@ fun HomeScreenContent(
                                     Text(
                                         text = "📡 Radar Canvas",
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (state.viewMode == HomeViewMode.RADAR) Color.White else NebulaColors.TextSecondary
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (state.viewMode == HomeViewMode.RADAR) NebulaColors.TextPrimary else NebulaColors.TextSecondary
                                     )
                                 }
                             }
@@ -505,29 +511,32 @@ private fun MemberRowItem(
     deviceBatteryPercent: Int = 0,
     onMemberClick: () -> Unit
 ) {
+    val isBreached = !member.isInsideGeofence
+    val isOwner = member.role == MemberRole.LEADER
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onMemberClick() }
             .border(
                 1.dp,
-                if (!member.isInsideGeofence) NebulaColors.CriticalCrimson else NebulaColors.CardBorder,
-                RoundedCornerShape(12.dp)
+                if (isBreached) Color(0xFFFCA5A5) else NebulaColors.CardBorder,
+                RoundedCornerShape(14.dp)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (!member.isInsideGeofence) NebulaColors.CriticalCrimsonContainer.copy(alpha = 0.4f) else NebulaColors.SurfaceDark
+            containerColor = if (isBreached) Color(0xFFFEF2F2) else Color.White
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(Color(member.avatarColorHex)),
                 contentAlignment = Alignment.Center
@@ -550,43 +559,58 @@ private fun MemberRowItem(
                         fontWeight = FontWeight.Bold,
                         color = NebulaColors.TextPrimary
                     )
-                    if (member.isLocalUser) {
+                    if (isOwner) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(NebulaColors.GoldOwnerContainer)
+                                .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("👑 Owner", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = NebulaColors.GoldOwner)
+                        }
+                    } else if (member.isLocalUser) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "(You)",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = NebulaColors.AccentCyan
+                            fontWeight = FontWeight.SemiBold,
+                            color = NebulaColors.PrimaryIndigo
                         )
                     }
                 }
                 val batteryDisplay = if (member.isLocalUser && deviceBatteryPercent > 0) {
-                    "🔋 $deviceBatteryPercent% (Hardware)"
+                    "🔋 $deviceBatteryPercent%"
                 } else {
                     "🔋 ${member.batteryPercent}%"
                 }
                 Text(
-                    text = "Role: ${member.role.name.replace("_", " ")} • $batteryDisplay",
+                    text = "${member.role.name.replace("_", " ")} • $batteryDisplay",
                     fontSize = 11.sp,
                     color = NebulaColors.TextSecondary
                 )
             }
 
             // Status indicator badge
-            val isBreached = !member.isInsideGeofence
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
                     .background(
-                        if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmeraldContainer
+                        if (isBreached) Color(0xFFFEE2E2) else NebulaColors.SafeEmeraldContainer
+                    )
+                    .border(
+                        1.dp,
+                        if (isBreached) Color(0xFFFCA5A5) else Color(0xFFA7F3D0),
+                        RoundedCornerShape(8.dp)
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = if (isBreached) "+${member.distanceToFenceMeters.toInt()}m OUT" else "INSIDE",
+                    text = if (isBreached) "+${member.distanceToFenceMeters.toInt()}m OUT" else "SAFE",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isBreached) Color.White else NebulaColors.SafeEmerald
+                    color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
                 )
             }
         }

@@ -43,7 +43,7 @@ fun GeofenceRadiusSlider(
             colors = SliderDefaults.colors(
                 thumbColor = NebulaColors.PrimaryIndigo,
                 activeTrackColor = NebulaColors.PrimaryIndigo,
-                inactiveTrackColor = NebulaColors.CardElevated
+                inactiveTrackColor = NebulaColors.CardBorder
             )
         )
 

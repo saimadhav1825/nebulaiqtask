@@ -148,34 +148,38 @@ private fun FilterTab(
     modifier: Modifier = Modifier,
     isAlert: Boolean = false
 ) {
+    val backgroundColor = when {
+        isSelected && isAlert -> NebulaColors.CriticalCrimson
+        isSelected -> NebulaColors.PrimaryIndigo
+        isAlert -> Color(0xFFFEF2F2)
+        else -> NebulaColors.SurfaceDark
+    }
+    val borderColor = when {
+        isSelected && isAlert -> NebulaColors.CriticalCrimson
+        isSelected -> NebulaColors.PrimaryIndigo
+        isAlert -> Color(0xFFFCA5A5)
+        else -> NebulaColors.CardBorder
+    }
+    val textColor = when {
+        isSelected -> Color.White
+        isAlert -> NebulaColors.CriticalCrimson
+        else -> NebulaColors.TextSecondary
+    }
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(
-                when {
-                    isSelected && isAlert -> NebulaColors.CriticalCrimsonContainer
-                    isSelected -> NebulaColors.PrimaryIndigo
-                    else -> NebulaColors.CardElevated
-                }
-            )
-            .border(
-                1.dp,
-                if (isSelected) Color.Transparent else NebulaColors.CardBorder,
-                RoundedCornerShape(10.dp)
-            )
+            .background(backgroundColor)
+            .border(1.dp, borderColor, RoundedCornerShape(10.dp))
             .clickable { onClick() }
-            .padding(vertical = 8.dp),
+            .padding(vertical = 9.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = title,
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = when {
-                isSelected -> Color.White
-                isAlert -> NebulaColors.CriticalCrimson
-                else -> NebulaColors.TextSecondary
-            }
+            color = textColor
         )
     }
 }

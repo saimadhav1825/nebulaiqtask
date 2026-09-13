@@ -33,8 +33,8 @@ fun PermissionRationaleBanner(
         Card(
             modifier = modifier
                 .fillMaxWidth()
-                .border(1.dp, NebulaColors.WarningAmber, RoundedCornerShape(16.dp)),
-            colors = CardDefaults.cardColors(containerColor = NebulaColors.SurfaceDark),
+                .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = NebulaColors.WarningAmberContainer),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -43,10 +43,10 @@ fun PermissionRationaleBanner(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "PERMISSIONS REQUIRED FOR LIVE GEOFENCING",
-                            fontSize = 11.sp,
+                            text = "Permissions Required For Live Geofencing",
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = NebulaColors.WarningAmber
+                            color = Color(0xFF92400E)
                         )
                         Text(
                             text = when {
@@ -67,15 +67,15 @@ fun PermissionRationaleBanner(
 
                 Button(
                     onClick = onRequestPermissions,
-                    modifier = Modifier.fillMaxWidth().height(42.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.WarningAmber),
+                    modifier = Modifier.fillMaxWidth().height(40.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
                         "Grant Permissions",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
-                        color = Color.Black
+                        color = Color.White
                     )
                 }
             }

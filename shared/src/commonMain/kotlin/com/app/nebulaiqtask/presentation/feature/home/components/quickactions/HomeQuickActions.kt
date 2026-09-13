@@ -127,16 +127,17 @@ fun HomeQuickActions(
                     colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("🔗 Join Group", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("🔗 Join Group", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
 
-                Button(
+                OutlinedButton(
                     onClick = onAddMemberClicked,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.AccentCyan),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = NebulaColors.PrimaryIndigo),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("+ Add Member", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NebulaColors.DeepBackground)
+                    Text("+ Add Member", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -147,7 +148,8 @@ fun HomeQuickActions(
                 Text(
                     text = "Test Geofence Breach on Member:",
                     fontSize = 12.sp,
-                    color = NebulaColors.TextPrimary
+                    fontWeight = FontWeight.Medium,
+                    color = NebulaColors.TextSecondary
                 )
                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -178,7 +180,7 @@ fun HomeQuickActions(
                     DropdownMenu(
                         expanded = expandedMemberMenu,
                         onDismissRequest = { expandedMemberMenu = false },
-                        modifier = Modifier.background(NebulaColors.SurfaceDark)
+                        modifier = Modifier.background(Color.White)
                     ) {
                         members.filter { !it.isLocalUser }.forEach { m ->
                             DropdownMenuItem(
@@ -209,7 +211,7 @@ fun HomeQuickActions(
                         colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.CriticalCrimson),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("🚨 Test Exit Breach", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("🚨 Test Exit Breach", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
 
                     Button(
@@ -220,7 +222,7 @@ fun HomeQuickActions(
                         colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.SafeEmerald),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("🛡️ Return Safe", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("🛡️ Return Safe", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }
@@ -233,7 +235,8 @@ fun HomeQuickActions(
                     onClick = onViewAlertsClicked,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = NebulaColors.AccentCyan)
+                    border = androidx.compose.foundation.BorderStroke(1.dp, NebulaColors.CardBorder),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = NebulaColors.TextPrimary)
                 ) {
                     Text("📋 Incident Log", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
@@ -244,7 +247,7 @@ fun HomeQuickActions(
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo)
                 ) {
-                    Text("+ New Group", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("+ New Group", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }

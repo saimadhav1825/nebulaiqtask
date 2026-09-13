@@ -27,6 +27,7 @@ fun MemberRosterCard(
     modifier: Modifier = Modifier
 ) {
     val isBreached = !member.isInsideGeofence
+    val isOwner = member.role == com.app.nebulaiqtask.domain.model.MemberRole.LEADER
 
     Card(
         modifier = modifier
@@ -34,11 +35,11 @@ fun MemberRosterCard(
             .clickable { onMemberClicked() }
             .border(
                 1.dp,
-                if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.CardBorder,
+                if (isBreached) Color(0xFFFCA5A5) else NebulaColors.CardBorder,
                 RoundedCornerShape(16.dp)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (isBreached) NebulaColors.CriticalCrimsonContainer.copy(alpha = 0.35f) else NebulaColors.SurfaceDark
+            containerColor = if (isBreached) Color(0xFFFEF2F2) else NebulaColors.SurfaceDark
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -72,6 +73,23 @@ fun MemberRosterCard(
                             fontSize = 15.sp,
                             color = NebulaColors.TextPrimary
                         )
+                        if (isOwner) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFFFFFBEB))
+                                    .border(0.8.dp, Color(0xFFFDE68A), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "👑 Owner",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB45309)
+                                )
+                            }
+                        }
                         if (member.isLocalUser) {
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
@@ -94,7 +112,12 @@ fun MemberRosterCard(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(
-                            if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmeraldContainer
+                            if (isBreached) Color(0xFFFEF2F2) else NebulaColors.SafeEmeraldContainer
+                        )
+                        .border(
+                            1.dp,
+                            if (isBreached) Color(0xFFFCA5A5) else Color(0xFFA7F3D0),
+                            RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
@@ -102,7 +125,7 @@ fun MemberRosterCard(
                         text = if (isBreached) "BREACH (+${member.distanceToFenceMeters.toInt()}m)" else "INSIDE",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isBreached) Color.White else NebulaColors.SafeEmerald
+                        color = if (isBreached) NebulaColors.CriticalCrimson else NebulaColors.SafeEmerald
                     )
                 }
             }

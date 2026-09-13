@@ -62,7 +62,8 @@ fun GeofenceRadarVisualizer(
             .fillMaxWidth()
             .height(300.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(NebulaColors.SurfaceDark),
+            .background(NebulaColors.SurfaceDark)
+            .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(20.dp)),
         contentAlignment = Alignment.Center
     ) {
         Canvas(
@@ -107,7 +108,7 @@ fun GeofenceRadarVisualizer(
             for (i in 1..3) {
                 val ringRadius = maxRadarRadius * (i / 3f)
                 drawCircle(
-                    color = NebulaColors.CardBorder.copy(alpha = 0.45f),
+                    color = NebulaColors.CardBorder,
                     radius = ringRadius,
                     center = Offset(centerX, centerY),
                     style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f)))
@@ -116,24 +117,24 @@ fun GeofenceRadarVisualizer(
 
             // 2. Crosshair grid lines
             drawLine(
-                color = NebulaColors.CardBorder.copy(alpha = 0.35f),
+                color = NebulaColors.CardBorder,
                 start = Offset(centerX, centerY - maxRadarRadius * 1.25f),
                 end = Offset(centerX, centerY + maxRadarRadius * 1.25f),
                 strokeWidth = 1f
             )
             drawLine(
-                color = NebulaColors.CardBorder.copy(alpha = 0.35f),
+                color = NebulaColors.CardBorder,
                 start = Offset(centerX - maxRadarRadius * 1.25f, centerY),
                 end = Offset(centerX + maxRadarRadius * 1.25f, centerY),
                 strokeWidth = 1f
             )
 
-            // 3. Geofence Boundary (Solid Electric Indigo perimeter)
+            // 3. Geofence Boundary (Perimeter)
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        NebulaColors.PrimaryIndigo.copy(alpha = 0.08f),
-                        NebulaColors.PrimaryIndigo.copy(alpha = 0.22f)
+                        NebulaColors.PrimaryIndigo.copy(alpha = 0.04f),
+                        NebulaColors.PrimaryIndigo.copy(alpha = 0.12f)
                     ),
                     center = Offset(centerX, centerY),
                     radius = maxRadarRadius
@@ -146,7 +147,7 @@ fun GeofenceRadarVisualizer(
                 color = NebulaColors.PrimaryIndigo,
                 radius = maxRadarRadius,
                 center = Offset(centerX, centerY),
-                style = Stroke(width = 3.5f)
+                style = Stroke(width = 2.5f)
             )
 
             // 4. Animated radar sweep line
@@ -155,7 +156,7 @@ fun GeofenceRadarVisualizer(
             val sweepEndY = centerY + sin(sweepRad) * maxRadarRadius
             drawLine(
                 brush = Brush.linearGradient(
-                    colors = listOf(NebulaColors.AccentCyan.copy(alpha = 0.6f), Color.Transparent),
+                    colors = listOf(NebulaColors.PrimaryIndigo.copy(alpha = 0.3f), Color.Transparent),
                     start = Offset(centerX, centerY),
                     end = Offset(sweepEndX, sweepEndY)
                 ),
@@ -167,7 +168,7 @@ fun GeofenceRadarVisualizer(
             // 5. Center geofence hub
             drawCircle(
                 color = NebulaColors.PrimaryIndigo,
-                radius = 7f,
+                radius = 6f,
                 center = Offset(centerX, centerY)
             )
 
@@ -207,7 +208,7 @@ fun GeofenceRadarVisualizer(
                     if (isOwner) {
                         // Owner golden aura ring
                         drawCircle(
-                            color = Color(0xFFFFD700),
+                            color = Color(0xFFF59E0B),
                             radius = 12.5f,
                             center = Offset(dotX, dotY),
                             style = Stroke(width = 2.5f)
@@ -235,7 +236,8 @@ fun GeofenceRadarVisualizer(
                 .align(Alignment.TopStart)
                 .padding(12.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(NebulaColors.DeepBackground.copy(alpha = 0.75f))
+                .background(Color.White.copy(alpha = 0.95f))
+                .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(8.dp))
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -243,7 +245,7 @@ fun GeofenceRadarVisualizer(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(NebulaColors.AccentCyan)
+                    .background(NebulaColors.PrimaryIndigo)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
@@ -261,7 +263,8 @@ fun GeofenceRadarVisualizer(
                     .align(Alignment.TopEnd)
                     .padding(12.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(NebulaColors.CriticalCrimsonContainer.copy(alpha = 0.9f))
+                    .background(Color(0xFFFEF2F2))
+                    .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(8.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -269,7 +272,7 @@ fun GeofenceRadarVisualizer(
                     text = "⚠️ $breachCount OUTSIDE",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = Color(0xFFDC2626)
                 )
             }
         }

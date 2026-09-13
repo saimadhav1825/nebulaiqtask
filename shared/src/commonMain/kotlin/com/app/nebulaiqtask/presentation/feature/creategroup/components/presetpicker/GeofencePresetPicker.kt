@@ -54,13 +54,14 @@ fun GeofencePresetPicker(
                             RoundedCornerShape(10.dp)
                         )
                         .clickable { onSelectPreset(index) }
-                        .padding(vertical = 10.dp, horizontal = 4.dp)
+                        .padding(vertical = 10.dp, horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = label,
                         fontSize = 11.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) NebulaColors.TextPrimary else NebulaColors.TextSecondary,
+                        color = if (isSelected) Color.White else NebulaColors.TextSecondary,
                         maxLines = 1
                     )
                 }
