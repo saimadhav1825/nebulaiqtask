@@ -292,6 +292,7 @@ private fun MemberMapPin(
 ) {
     Column(
         modifier = modifier.clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier.size(36.dp),
