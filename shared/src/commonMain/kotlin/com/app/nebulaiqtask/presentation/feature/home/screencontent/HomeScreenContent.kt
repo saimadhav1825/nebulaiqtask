@@ -24,7 +24,7 @@ import com.app.nebulaiqtask.presentation.feature.home.components.quickactions.Ho
 import com.app.nebulaiqtask.presentation.feature.home.components.radarvisualizer.GeofenceRadarVisualizer
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
 import com.app.nebulaiqtask.presentation.feature.home.state.HomeState
-import com.app.nebulaiqtask.presentation.feature.home.state.MapViewMode
+import com.app.nebulaiqtask.presentation.feature.home.state.HomeViewMode
 import com.app.nebulaiqtask.presentation.platform.GroupMapView
 import com.app.nebulaiqtask.presentation.theme.NebulaColors
 
@@ -183,8 +183,8 @@ fun HomeScreenContent(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(if (state.selectedViewMode == MapViewMode.MAP) NebulaColors.PrimaryIndigo else Color.Transparent)
-                                        .clickable { onIntent(HomeIntent.SetViewMode(MapViewMode.MAP)) }
+                                        .background(if (state.viewMode == HomeViewMode.MAP) NebulaColors.PrimaryIndigo else Color.Transparent)
+                                        .clickable { onIntent(HomeIntent.OnViewModeChanged(HomeViewMode.MAP)) }
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -192,7 +192,7 @@ fun HomeScreenContent(
                                         text = "🗺️ Live Map",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (state.selectedViewMode == MapViewMode.MAP) Color.White else NebulaColors.TextSecondary
+                                        color = if (state.viewMode == HomeViewMode.MAP) Color.White else NebulaColors.TextSecondary
                                     )
                                 }
 
@@ -200,8 +200,8 @@ fun HomeScreenContent(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(if (state.selectedViewMode == MapViewMode.RADAR) NebulaColors.PrimaryIndigo else Color.Transparent)
-                                        .clickable { onIntent(HomeIntent.SetViewMode(MapViewMode.RADAR)) }
+                                        .background(if (state.viewMode == HomeViewMode.RADAR) NebulaColors.PrimaryIndigo else Color.Transparent)
+                                        .clickable { onIntent(HomeIntent.OnViewModeChanged(HomeViewMode.RADAR)) }
                                         .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -209,12 +209,12 @@ fun HomeScreenContent(
                                         text = "📡 Radar Canvas",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (state.selectedViewMode == MapViewMode.RADAR) Color.White else NebulaColors.TextSecondary
+                                        color = if (state.viewMode == HomeViewMode.RADAR) Color.White else NebulaColors.TextSecondary
                                     )
                                 }
                             }
 
-                            if (state.selectedViewMode == MapViewMode.MAP) {
+                            if (state.viewMode == HomeViewMode.MAP) {
                                 GroupMapView(
                                     geofence = group.geofence,
                                     members = state.members,
@@ -247,7 +247,7 @@ fun HomeScreenContent(
                         useRealDeviceGps = state.useRealDeviceGps,
                         onToggleSimulation = { onIntent(HomeIntent.ToggleSimulation) },
                         onToggleTracking = { onIntent(HomeIntent.ToggleTracking) },
-                        onToggleRealDeviceGps = { onIntent(HomeIntent.ToggleRealDeviceGps(it)) },
+                        onToggleRealDeviceGps = { onIntent(HomeIntent.OnToggleRealDeviceGps(it)) },
                         onTriggerBreach = { onIntent(HomeIntent.TriggerBreachForMember(it)) },
                         onReturnToSafety = { onIntent(HomeIntent.ReturnMemberToSafety(it)) },
                         onCreateGroupClicked = { onIntent(HomeIntent.OnCreateGroupClicked) },
