@@ -30,8 +30,9 @@ internal data class FirebaseGroupPayload(
 )
 
 class FirebaseGroupDataSource(
-    private val databaseUrl: String = "https://nebulaiq-geofence-default-rtdb.firebaseio.com"
+    databaseUrl: String = "https://nebulaiqtask-default-rtdb.asia-southeast1.firebasedatabase.app"
 ) {
+    private val databaseUrl: String = databaseUrl.trimEnd('/')
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
