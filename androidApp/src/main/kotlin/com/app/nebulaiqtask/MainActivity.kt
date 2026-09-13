@@ -9,21 +9,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import com.app.nebulaiqtask.data.auth.FirebaseAuthManager
+import com.app.nebulaiqtask.data.session.UserSessionManager
 import com.app.nebulaiqtask.service.GeofenceForegroundService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
+
+    private val userSessionManager: UserSessionManager by inject()
+    private val firebaseAuthManager: FirebaseAuthManager by inject()
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        val notificationsGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions[Manifest.permission.POST_NOTIFICATIONS] ?: false
-        } else true
-
         if (fineLocationGranted) {
             startGeofenceService()
         }
@@ -33,10 +36,36 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        // Sign in with Firebase Anonymous Auth and initialize the session
+        initializeUserSession()
+
         checkAndRequestPermissions()
 
         setContent {
             App()
+        }
+    }
+
+    /**
+     * Performs Firebase Anonymous Auth on every launch.
+     * The UID is stable and persists across sessions — Firebase re-uses
+     * the same anonymous account once created on the device.
+     * After auth, UserSessionManager is initialized with the real UID
+     * and any saved display name from SharedPreferences.
+     */
+    private fun initializeUserSession() {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val uid = firebaseAuthManager.signInAnonymously()
+                val savedName = firebaseAuthManager.getDisplayName() ?: "User ${uid.take(4)}"
+                userSessionManager.initialize(userId = uid, displayName = savedName)
+            } catch (e: Exception) {
+                // If Firebase is unreachable, fall back to a device-local ID
+                val fallbackId = firebaseAuthManager.getCurrentUserId()
+                    ?: "local_${android.os.Build.FINGERPRINT.hashCode().toString(16)}"
+                val savedName = firebaseAuthManager.getDisplayName() ?: "Operator"
+                userSessionManager.initialize(userId = fallbackId, displayName = savedName)
+            }
         }
     }
 
@@ -77,10 +106,4 @@ class MainActivity : ComponentActivity() {
             e.printStackTrace()
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }

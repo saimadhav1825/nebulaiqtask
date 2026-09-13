@@ -13,27 +13,52 @@ data class UserProfile(
     val avatarColorHex: Long = 0xFF6366F1
 )
 
+/**
+ * Holds the current user's session profile.
+ *
+ * On Android, the [userId] is the real Firebase Anonymous Auth UID,
+ * injected at startup by [FirebaseAuthManager]. It is stable across
+ * app sessions, unlike the old random `usr_XXXX` IDs.
+ *
+ * [displayName] is persisted by FirebaseAuthManager in SharedPreferences.
+ */
 class UserSessionManager {
-    private val randomDigits = Random.nextInt(1000, 9999)
-    private val initialProfile = UserProfile(
-        userId = "usr_$randomDigits",
-        displayName = "Operator $randomDigits",
-        role = MemberRole.LEADER,
-        avatarColorHex = 0xFF6366F1
-    )
 
-    private val _currentProfile = MutableStateFlow(initialProfile)
+    private val _currentProfile = MutableStateFlow(
+        UserProfile(
+            userId = "",          // Populated from FirebaseAuthManager at startup
+            displayName = "",     // Populated from FirebaseAuthManager/prefs at startup
+            role = MemberRole.LEADER,
+            avatarColorHex = 0xFF6366F1
+        )
+    )
     val currentProfile: StateFlow<UserProfile> = _currentProfile.asStateFlow()
 
-    fun updateProfile(displayName: String, role: MemberRole = MemberRole.MEMBER) {
-        val initials = displayName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase()
-        val colors = listOf(0xFF6366F1, 0xFF06B6D4, 0xFF10B981, 0xFFF59E0B, 0xFFEC4899, 0xFF8B5CF6)
-        val color = colors[Random.nextInt(colors.size)]
+    /**
+     * Called once at startup (from MainActivity/NebulaApp) after Firebase Auth
+     * completes and any saved display name is loaded from SharedPreferences.
+     */
+    fun initialize(userId: String, displayName: String) {
+        val colors = listOf(0xFF6366F1L, 0xFF06B6D4L, 0xFF10B981L, 0xFFF59E0BL, 0xFFEC4899L, 0xFF8B5CF6L)
+        // Deterministic color from userId hash so it's consistent across sessions
+        val colorIndex = ((userId.hashCode() % colors.size) + colors.size) % colors.size
+        _currentProfile.value = UserProfile(
+            userId = userId,
+            displayName = displayName,
+            role = MemberRole.LEADER,
+            avatarColorHex = colors[colorIndex]
+        )
+    }
 
+    /** Update display name and optional role (e.g. when user edits their profile) */
+    fun updateProfile(displayName: String, role: MemberRole = MemberRole.MEMBER) {
+        val colors = listOf(0xFF6366F1L, 0xFF06B6D4L, 0xFF10B981L, 0xFFF59E0BL, 0xFFEC4899L, 0xFF8B5CF6L)
+        val userId = _currentProfile.value.userId
+        val colorIndex = ((userId.hashCode() % colors.size) + colors.size) % colors.size
         _currentProfile.value = _currentProfile.value.copy(
-            displayName = displayName.ifBlank { "Member $randomDigits" },
+            displayName = displayName.ifBlank { _currentProfile.value.displayName },
             role = role,
-            avatarColorHex = color
+            avatarColorHex = colors[colorIndex]
         )
     }
 
@@ -41,4 +66,5 @@ class UserSessionManager {
     fun getDisplayName(): String = _currentProfile.value.displayName
     fun getRole(): MemberRole = _currentProfile.value.role
     fun getAvatarColor(): Long = _currentProfile.value.avatarColorHex
+    fun isInitialized(): Boolean = _currentProfile.value.userId.isNotBlank()
 }

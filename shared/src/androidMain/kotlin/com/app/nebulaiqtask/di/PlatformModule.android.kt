@@ -1,10 +1,12 @@
 package com.app.nebulaiqtask.di
 
+import com.app.nebulaiqtask.data.auth.FirebaseAuthManager
 import com.app.nebulaiqtask.presentation.platform.*
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
 actual val platformModule: Module = module {
+    single { FirebaseAuthManager(get()) }
     single { PlatformNotificationManager(get()) }
     single { PlatformLocationTracker(get()) }
     single { PlatformPermissionManager(get()) }
