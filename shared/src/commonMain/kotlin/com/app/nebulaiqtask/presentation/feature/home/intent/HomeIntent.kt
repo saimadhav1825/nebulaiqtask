@@ -1,5 +1,6 @@
 package com.app.nebulaiqtask.presentation.feature.home.intent
 
+import com.app.nebulaiqtask.domain.model.MemberRole
 import com.app.nebulaiqtask.presentation.feature.home.state.HomeViewMode
 
 sealed interface HomeIntent {
@@ -17,4 +18,15 @@ sealed interface HomeIntent {
     data class OnToggleRealDeviceGps(val enabled: Boolean) : HomeIntent
     data object RequestPermissions : HomeIntent
     data object OnPermissionsUpdated : HomeIntent
+
+    // Multi-Device & Firebase Group Management
+    data class ShowJoinGroupDialog(val show: Boolean) : HomeIntent
+    data class OnJoinGroupCodeChanged(val code: String) : HomeIntent
+    data object SubmitJoinGroup : HomeIntent
+    data class ShowAddMemberDialog(val show: Boolean) : HomeIntent
+    data class OnNewMemberNameChanged(val name: String) : HomeIntent
+    data class OnNewMemberRoleChanged(val role: MemberRole) : HomeIntent
+    data object SubmitAddMember : HomeIntent
+    data class RemoveMember(val memberId: String) : HomeIntent
 }
+

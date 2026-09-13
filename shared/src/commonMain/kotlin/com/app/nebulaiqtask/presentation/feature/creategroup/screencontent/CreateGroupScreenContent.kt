@@ -91,7 +91,7 @@ fun CreateGroupScreenContent(
                     )
 
                     Text(
-                        text = "Creates a group pre-populated with 10 members and instant broadcast notifications.",
+                        text = "Creates a real tracking group, generates a shareable 6-character Invite Code for other devices, and enables real-time Firebase sync.",
                         fontSize = 11.sp,
                         color = NebulaColors.TextSecondary
                     )

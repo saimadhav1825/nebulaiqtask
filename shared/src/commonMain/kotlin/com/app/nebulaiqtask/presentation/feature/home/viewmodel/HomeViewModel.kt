@@ -3,6 +3,7 @@ package com.app.nebulaiqtask.presentation.feature.home.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.nebulaiqtask.data.session.UserSessionManager
 import com.app.nebulaiqtask.domain.usecase.*
 import com.app.nebulaiqtask.presentation.feature.home.effect.HomeEffect
 import com.app.nebulaiqtask.presentation.feature.home.intent.HomeIntent
@@ -14,9 +15,7 @@ import com.app.nebulaiqtask.presentation.platform.PlatformNotificationManager
 import com.app.nebulaiqtask.presentation.platform.PlatformPermissionManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
@@ -24,7 +23,9 @@ class HomeViewModel(
     private val getTrackingGroupUseCase: GetTrackingGroupUseCase,
     private val getGroupMembersUseCase: GetGroupMembersUseCase,
     private val checkGeofenceBreachUseCase: CheckGeofenceBreachUseCase,
-    private val simulateMemberMovementUseCase: SimulateMemberMovementUseCase,
+    private val joinTrackingGroupUseCase: JoinTrackingGroupUseCase,
+    private val addGroupMemberUseCase: AddGroupMemberUseCase,
+    private val removeGroupMemberUseCase: RemoveGroupMemberUseCase,
     private val sendBreachNotificationUseCase: SendBreachNotificationUseCase,
     private val triggerMemberExitUseCase: TriggerMemberExitUseCase,
     private val triggerMemberReturnUseCase: TriggerMemberReturnUseCase,
@@ -32,22 +33,29 @@ class HomeViewModel(
     private val toggleTrackingUseCase: ToggleTrackingUseCase,
     private val getActiveAlertsUseCase: GetActiveAlertsUseCase,
     private val updateMemberLocationUseCase: UpdateMemberLocationUseCase,
+    private val userSessionManager: UserSessionManager,
     private val permissionManager: PlatformPermissionManager,
     private val locationTracker: PlatformLocationTracker,
     private val deviceTelemetry: PlatformDeviceTelemetry,
     private val notificationManager: PlatformNotificationManager
 ) : ViewModel() {
 
-    private val defaultGroupId = "group_team_alpha"
-    private val currentGroupId: String
+    private val defaultGroupId = "NEB-7700"
+    private var activeGroupId: String
         get() = savedStateHandle.get<String>("KEY_GROUP_ID") ?: defaultGroupId
+        set(value) {
+            savedStateHandle["KEY_GROUP_ID"] = value
+        }
 
     private val _state = MutableStateFlow(
         HomeState(
             isLoading = true,
             hasLocationPermission = permissionManager.hasLocationPermission(),
             hasNotificationPermission = permissionManager.hasNotificationPermission(),
-            deviceBatteryPercent = deviceTelemetry.getBatteryPercentage()
+            deviceBatteryPercent = deviceTelemetry.getBatteryPercentage(),
+            useRealDeviceGps = true,
+            currentUserId = userSessionManager.getUserId(),
+            currentUserName = userSessionManager.getDisplayName()
         )
     )
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -55,14 +63,18 @@ class HomeViewModel(
     private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
     val effect: Flow<HomeEffect> = _effect.receiveAsFlow()
 
-    private var simulationJob: Job? = null
+    private var groupObservationJob: Job? = null
+    private var membersObservationJob: Job? = null
+    private var alertsObservationJob: Job? = null
     private var gpsTrackingJob: Job? = null
 
     init {
-        savedStateHandle["KEY_GROUP_ID"] = currentGroupId
+        savedStateHandle["KEY_GROUP_ID"] = activeGroupId
         observeGroupData()
-        startAutomaticSimulation()
         checkPermissions()
+        if (_state.value.hasLocationPermission) {
+            startRealDeviceGps()
+        }
     }
 
     private fun checkPermissions() {
@@ -76,8 +88,14 @@ class HomeViewModel(
     }
 
     private fun observeGroupData() {
-        viewModelScope.launch {
-            getTrackingGroupUseCase(currentGroupId).collectLatest { group ->
+        groupObservationJob?.cancel()
+        membersObservationJob?.cancel()
+        alertsObservationJob?.cancel()
+
+        val groupId = activeGroupId
+
+        groupObservationJob = viewModelScope.launch {
+            getTrackingGroupUseCase(groupId).collectLatest { group ->
                 _state.update {
                     it.copy(
                         isLoading = false,
@@ -88,24 +106,27 @@ class HomeViewModel(
             }
         }
 
-        viewModelScope.launch {
-            getGroupMembersUseCase(currentGroupId).collectLatest { membersList ->
+        membersObservationJob = viewModelScope.launch {
+            getGroupMembersUseCase(groupId).collectLatest { membersList ->
                 val group = _state.value.activeGroup
                 if (group != null && membersList.isNotEmpty()) {
                     for (member in membersList) {
                         val result = checkGeofenceBreachUseCase(
-                            groupId = currentGroupId,
+                            groupId = groupId,
                             member = member,
                             fence = group.geofence,
                             totalGroupMembersCount = membersList.size
                         )
 
-                        // If state changed or alert generated
                         if (result.generatedAlert != null) {
                             sendBreachNotificationUseCase(
                                 alert = result.generatedAlert,
                                 groupName = group.name,
                                 recipientCount = membersList.size - 1
+                            )
+                            notificationManager.showBreachNotification(
+                                title = "🚨 GEOFENCE BREACH: ${member.name}",
+                                message = "${member.name} exited ${group.geofence.name} (+${result.distanceOutsideMeters.toInt()}m)!"
                             )
                             notificationManager.playBreachAlertHapticAndAudio()
                         }
@@ -115,8 +136,8 @@ class HomeViewModel(
             }
         }
 
-        viewModelScope.launch {
-            getActiveAlertsUseCase(currentGroupId).collectLatest { alerts ->
+        alertsObservationJob = viewModelScope.launch {
+            getActiveAlertsUseCase(groupId).collectLatest { alerts ->
                 val unacknowledged = alerts.firstOrNull { !it.isAcknowledged }
                 _state.update {
                     it.copy(
@@ -157,18 +178,14 @@ class HomeViewModel(
                 }
             }
             is HomeIntent.ToggleSimulation -> {
-                if (_state.value.isSimulationRunning) {
-                    stopSimulation()
-                } else {
-                    startAutomaticSimulation()
-                }
+                // Kept for backward compatibility
             }
             is HomeIntent.ToggleTracking -> {
                 val group = _state.value.activeGroup ?: return
                 viewModelScope.launch {
                     val updated = toggleTrackingUseCase(group.id, !group.isTrackingActive)
                     _state.update { it.copy(isTrackingActive = updated.isTrackingActive) }
-                    _effect.send(HomeEffect.ShowSnackbar("Tracking ${if (updated.isTrackingActive) "Activated" else "Paused"}"))
+                    _effect.send(HomeEffect.ShowSnackbar("Tracking ${if (updated.isTrackingActive) "Active" else "Paused"}"))
                 }
             }
             is HomeIntent.TriggerBreachForMember -> {
@@ -188,9 +205,13 @@ class HomeViewModel(
                                 groupName = group.name,
                                 recipientCount = _state.value.members.size - 1
                             )
+                            notificationManager.showBreachNotification(
+                                title = "🚨 GEOFENCE BREACH: ${breached.name}",
+                                message = "${breached.name} stepped outside ${group.geofence.name}!"
+                            )
                             notificationManager.playBreachAlertHapticAndAudio()
                         }
-                        _effect.send(HomeEffect.ShowSnackbar("⚠️ Breach triggered for ${breached.name}! Group alerted."))
+                        _effect.send(HomeEffect.ShowSnackbar("⚠️ Breach simulated for ${breached.name}! Group alerted."))
                     }
                 }
             }
@@ -229,6 +250,80 @@ class HomeViewModel(
                     _effect.send(HomeEffect.NavigateToMemberDetail(intent.memberId, intent.groupId))
                 }
             }
+            is HomeIntent.ShowJoinGroupDialog -> {
+                _state.update { it.copy(isJoinGroupDialogVisible = intent.show, joinGroupCodeInput = "") }
+            }
+            is HomeIntent.OnJoinGroupCodeChanged -> {
+                _state.update { it.copy(joinGroupCodeInput = intent.code.uppercase()) }
+            }
+            is HomeIntent.SubmitJoinGroup -> {
+                joinGroup()
+            }
+            is HomeIntent.ShowAddMemberDialog -> {
+                _state.update { it.copy(isAddMemberDialogVisible = intent.show, newMemberNameInput = "") }
+            }
+            is HomeIntent.OnNewMemberNameChanged -> {
+                _state.update { it.copy(newMemberNameInput = intent.name) }
+            }
+            is HomeIntent.OnNewMemberRoleChanged -> {
+                _state.update { it.copy(newMemberRole = intent.role) }
+            }
+            is HomeIntent.SubmitAddMember -> {
+                addNewMember()
+            }
+            is HomeIntent.RemoveMember -> {
+                viewModelScope.launch {
+                    val group = _state.value.activeGroup ?: return@launch
+                    removeGroupMemberUseCase(group.id, intent.memberId)
+                    _effect.send(HomeEffect.ShowSnackbar("Member removed from group."))
+                }
+            }
+        }
+    }
+
+    private fun joinGroup() {
+        val code = _state.value.joinGroupCodeInput.trim().uppercase()
+        if (code.isBlank()) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isSubmittingAction = true) }
+            val result = joinTrackingGroupUseCase(code)
+            _state.update { it.copy(isSubmittingAction = false) }
+
+            result.onSuccess { joinedGroup ->
+                activeGroupId = joinedGroup.id
+                _state.update {
+                    it.copy(
+                        isJoinGroupDialogVisible = false,
+                        activeGroup = joinedGroup,
+                        members = joinedGroup.members
+                    )
+                }
+                observeGroupData()
+                _effect.send(HomeEffect.ShowSnackbar("🎉 Successfully joined group ${joinedGroup.name} ($code)"))
+            }.onFailure { error ->
+                _effect.send(HomeEffect.ShowSnackbar("❌ Failed to join group: ${error.message ?: "Invalid code"}"))
+            }
+        }
+    }
+
+    private fun addNewMember() {
+        val name = _state.value.newMemberNameInput.trim()
+        val role = _state.value.newMemberRole
+        val group = _state.value.activeGroup ?: return
+
+        if (name.isBlank()) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isSubmittingAction = true) }
+            val result = addGroupMemberUseCase(group.id, name, role)
+            _state.update { it.copy(isSubmittingAction = false, isAddMemberDialogVisible = false) }
+
+            result.onSuccess { newMember ->
+                _effect.send(HomeEffect.ShowSnackbar("✅ Added ${newMember.name} to the group!"))
+            }.onFailure { error ->
+                _effect.send(HomeEffect.ShowSnackbar("❌ Failed to add member: ${error.message}"))
+            }
         }
     }
 
@@ -237,29 +332,40 @@ class HomeViewModel(
         gpsTrackingJob = viewModelScope.launch {
             locationTracker.startLocationUpdates().collectLatest { realCoord ->
                 val group = _state.value.activeGroup
-                val localMember = _state.value.members.find { it.isLocalUser }
-                if (group != null && localMember != null) {
-                    val check = checkGeofenceBreachUseCase(
-                        groupId = group.id,
-                        member = localMember.copy(currentLocation = realCoord),
-                        fence = group.geofence,
-                        totalGroupMembersCount = _state.value.members.size
-                    )
+                val myUserId = userSessionManager.getUserId()
+                val battery = deviceTelemetry.getBatteryPercentage()
 
-                    updateMemberLocationUseCase(
-                        memberId = localMember.id,
-                        location = realCoord,
-                        isInside = check.isInside,
-                        distanceToFence = check.distanceOutsideMeters
-                    )
-
-                    if (check.generatedAlert != null) {
-                        sendBreachNotificationUseCase(
-                            alert = check.generatedAlert,
-                            groupName = group.name,
-                            recipientCount = _state.value.members.size - 1
+                if (group != null) {
+                    val localMember = _state.value.members.find { it.isLocalUser || it.id == myUserId }
+                    if (localMember != null) {
+                        val check = checkGeofenceBreachUseCase(
+                            groupId = group.id,
+                            member = localMember.copy(currentLocation = realCoord),
+                            fence = group.geofence,
+                            totalGroupMembersCount = _state.value.members.size
                         )
-                        notificationManager.playBreachAlertHapticAndAudio()
+
+                        updateMemberLocationUseCase(
+                            groupId = group.id,
+                            memberId = localMember.id,
+                            location = realCoord,
+                            battery = battery,
+                            isInside = check.isInside,
+                            distanceToFence = check.distanceOutsideMeters
+                        )
+
+                        if (check.generatedAlert != null) {
+                            sendBreachNotificationUseCase(
+                                alert = check.generatedAlert,
+                                groupName = group.name,
+                                recipientCount = _state.value.members.size - 1
+                            )
+                            notificationManager.showBreachNotification(
+                                title = "🚨 GEOFENCE BREACH: YOU EXITED!",
+                                message = "You are outside ${group.geofence.name} by ${check.distanceOutsideMeters.toInt()}m!"
+                            )
+                            notificationManager.playBreachAlertHapticAndAudio()
+                        }
                     }
                 }
             }
@@ -272,28 +378,9 @@ class HomeViewModel(
         locationTracker.stopLocationUpdates()
     }
 
-    private fun startAutomaticSimulation() {
-        simulationJob?.cancel()
-        _state.update { it.copy(isSimulationRunning = true) }
-        simulationJob = viewModelScope.launch {
-            while (isActive) {
-                delay(3500)
-                if (_state.value.isTrackingActive) {
-                    simulateMemberMovementUseCase(currentGroupId)
-                }
-            }
-        }
-    }
-
-    private fun stopSimulation() {
-        simulationJob?.cancel()
-        simulationJob = null
-        _state.update { it.copy(isSimulationRunning = false) }
-    }
-
     override fun onCleared() {
         super.onCleared()
-        simulationJob?.cancel()
         stopRealDeviceGps()
     }
 }
+

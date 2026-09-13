@@ -20,14 +20,14 @@ import com.app.nebulaiqtask.presentation.theme.NebulaColors
 @Composable
 fun HomeQuickActions(
     members: List<GroupMember>,
-    isSimulationRunning: Boolean,
     isTrackingActive: Boolean,
     useRealDeviceGps: Boolean,
-    onToggleSimulation: () -> Unit,
     onToggleTracking: () -> Unit,
     onToggleRealDeviceGps: (Boolean) -> Unit,
     onTriggerBreach: (String) -> Unit,
     onReturnToSafety: (String) -> Unit,
+    onJoinGroupClicked: () -> Unit,
+    onAddMemberClicked: () -> Unit,
     onCreateGroupClicked: () -> Unit,
     onViewAlertsClicked: () -> Unit,
     modifier: Modifier = Modifier
@@ -51,7 +51,7 @@ fun HomeQuickActions(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "GEOFENCE CONTROL & SIMULATOR",
+                    text = "GEOFENCE & MULTI-DEVICE CONTROLS",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = NebulaColors.TextSecondary
@@ -93,14 +93,14 @@ fun HomeQuickActions(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📍 Real Device GPS", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NebulaColors.TextPrimary)
+                        Text("📍 Hardware GPS Chip", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NebulaColors.TextPrimary)
                         if (useRealDeviceGps) {
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("LIVE", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = NebulaColors.AccentCyan)
+                            Text("LIVE SYNC", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = NebulaColors.AccentCyan)
                         }
                     }
                     Text(
-                        text = if (useRealDeviceGps) "Using phone's hardware GPS chip for You (Alex)" else "Using simulated motion for You (Alex)",
+                        text = if (useRealDeviceGps) "Streaming your real physical GPS to Firebase" else "GPS streaming paused",
                         fontSize = 11.sp,
                         color = NebulaColors.TextSecondary
                     )
@@ -119,84 +119,109 @@ fun HomeQuickActions(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Member Selector Bar
-            Text(
-                text = "Target Member for Geofence Testing:",
-                fontSize = 12.sp,
-                color = NebulaColors.TextPrimary
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(NebulaColors.CardElevated)
-                    .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(10.dp))
-                    .clickable { expandedMemberMenu = true }
-                    .padding(horizontal = 14.dp, vertical = 10.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            // Join Group & Add Member Quick Buttons
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onJoinGroupClicked,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.PrimaryIndigo),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(
-                        text = selectedMember?.let { "${it.name} (${if (it.isInsideGeofence) "Inside" else "OUTSIDE"})" }
-                            ?: "Select member",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (selectedMember?.isInsideGeofence == false) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary
-                    )
-                    Text("▼", fontSize = 11.sp, color = NebulaColors.TextSecondary)
+                    Text("🔗 Join Group", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
-                DropdownMenu(
-                    expanded = expandedMemberMenu,
-                    onDismissRequest = { expandedMemberMenu = false },
-                    modifier = Modifier.background(NebulaColors.SurfaceDark)
+                Button(
+                    onClick = onAddMemberClicked,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.AccentCyan),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    members.filter { !it.isLocalUser }.forEach { m ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "${m.name} - ${if (m.isInsideGeofence) "Inside" else "OUTSIDE"}",
-                                    color = if (!m.isInsideGeofence) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary
-                                )
-                            },
-                            onClick = {
-                                selectedMemberId = m.id
-                                expandedMemberMenu = false
-                            }
-                        )
-                    }
+                    Text("+ Add Member", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NebulaColors.DeepBackground)
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            if (members.any { !it.isLocalUser }) {
+                Spacer(modifier = Modifier.height(14.dp))
 
-            // Action Buttons: Breach vs Return to Safety
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = {
-                        selectedMember?.let { onTriggerBreach(it.id) }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.CriticalCrimson),
-                    shape = RoundedCornerShape(10.dp)
+                // Member Selector Bar for breach alert test
+                Text(
+                    text = "Test Geofence Breach on Member:",
+                    fontSize = 12.sp,
+                    color = NebulaColors.TextPrimary
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(NebulaColors.CardElevated)
+                        .border(1.dp, NebulaColors.CardBorder, RoundedCornerShape(10.dp))
+                        .clickable { expandedMemberMenu = true }
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
-                    Text("🚨 Trigger Exit", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = selectedMember?.let { "${it.name} (${if (it.isInsideGeofence) "Inside" else "OUTSIDE"})" }
+                                ?: "Select member",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (selectedMember?.isInsideGeofence == false) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary
+                        )
+                        Text("▼", fontSize = 11.sp, color = NebulaColors.TextSecondary)
+                    }
+
+                    DropdownMenu(
+                        expanded = expandedMemberMenu,
+                        onDismissRequest = { expandedMemberMenu = false },
+                        modifier = Modifier.background(NebulaColors.SurfaceDark)
+                    ) {
+                        members.filter { !it.isLocalUser }.forEach { m ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "${m.name} - ${if (m.isInsideGeofence) "Inside" else "OUTSIDE"}",
+                                        color = if (!m.isInsideGeofence) NebulaColors.CriticalCrimson else NebulaColors.TextPrimary
+                                    )
+                                },
+                                onClick = {
+                                    selectedMemberId = m.id
+                                    expandedMemberMenu = false
+                                }
+                            )
+                        }
+                    }
                 }
 
-                Button(
-                    onClick = {
-                        selectedMember?.let { onReturnToSafety(it.id) }
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.SafeEmerald),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("🛡️ Return Safe", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Action Buttons: Breach vs Return to Safety
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            selectedMember?.let { onTriggerBreach(it.id) }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.CriticalCrimson),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("🚨 Test Exit Breach", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = {
+                            selectedMember?.let { onReturnToSafety(it.id) }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = NebulaColors.SafeEmerald),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("🛡️ Return Safe", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 
@@ -225,3 +250,4 @@ fun HomeQuickActions(
         }
     }
 }
+

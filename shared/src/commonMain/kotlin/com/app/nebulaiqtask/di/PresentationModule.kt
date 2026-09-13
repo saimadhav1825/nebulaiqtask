@@ -16,7 +16,9 @@ val presentationModule = module {
             getTrackingGroupUseCase = get(),
             getGroupMembersUseCase = get(),
             checkGeofenceBreachUseCase = get(),
-            simulateMemberMovementUseCase = get(),
+            joinTrackingGroupUseCase = get(),
+            addGroupMemberUseCase = get(),
+            removeGroupMemberUseCase = get(),
             sendBreachNotificationUseCase = get(),
             triggerMemberExitUseCase = get(),
             triggerMemberReturnUseCase = get(),
@@ -24,11 +26,13 @@ val presentationModule = module {
             toggleTrackingUseCase = get(),
             getActiveAlertsUseCase = get(),
             updateMemberLocationUseCase = get(),
+            userSessionManager = get(),
             permissionManager = get(),
             locationTracker = get(),
             deviceTelemetry = get(),
             notificationManager = get()
         )
+
     }
 
     viewModel { params ->
