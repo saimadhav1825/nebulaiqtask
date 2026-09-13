@@ -78,11 +78,9 @@ class CheckGeofenceBreachUseCase {
             }
         }
 
-        val isOwner = member.role == MemberRole.LEADER
-
-        // Only generate new alert on genuine TRANSITION_EXIT when alertOnExit is enabled
-        // AND the member is NOT the owner (notifications only send if joined/other members go outside, not owner)
-        val alert = if (transition == GeofenceTransition.TRANSITION_EXIT && fence.alertOnExit && !isOwner) {
+        // Generate new alert on genuine TRANSITION_EXIT when alertOnExit is enabled
+        // (Delivered to other members of the group; the person who exited is never notified)
+        val alert = if (transition == GeofenceTransition.TRANSITION_EXIT && fence.alertOnExit) {
             BreachAlert(
                 id = "alert_${member.id}_${member.currentLocation.timestamp}",
                 groupId = groupId,

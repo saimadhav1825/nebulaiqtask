@@ -136,34 +136,29 @@ class GeofenceForegroundService : Service(), KoinComponent {
                         )
 
                         val memberAlert = result.generatedAlert
-                        // ONLY the group owner receives breach notifications on their device
-                        if (memberAlert != null && isCurrentUserOwner) {
+                        // Other members of the group are notified (never the member who moved out)
+                        if (memberAlert != null && member.id != myUserId) {
                             sendBreachNotificationUseCase(
                                 alert = memberAlert,
                                 groupName = group.name,
-                                recipientCount = group.members.size - 1,
-                                isLocalUserOwner = true
+                                recipientCount = group.members.size - 1
                             )
-                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER && isCurrentUserOwner) {
+                        } else if (result.transition == GeofenceTransition.TRANSITION_ENTER && member.id != myUserId) {
                             sendBreachNotificationUseCase.onMemberReturnedToSafety(
                                 groupId = groupId,
                                 memberId = member.id,
                                 memberName = member.name
                             )
                         }
-                        if (!result.isInside && member.role != MemberRole.LEADER) {
+                        if (!result.isInside) {
                             breachCount++
                         }
                     }
 
-                    if (isCurrentUserOwner) {
-                        if (breachCount > 0) {
-                            updateNotification("🚨 $breachCount member(s) outside ${group.geofence.name}!")
-                        } else {
-                            updateNotification("🛡️ All ${group.members.size} members inside ${group.geofence.name}")
-                        }
+                    if (breachCount > 0) {
+                        updateNotification("🚨 $breachCount member(s) outside ${group.geofence.name}!")
                     } else {
-                        updateNotification("🛡️ Tracking active in ${group.geofence.name}")
+                        updateNotification("🛡️ All ${group.members.size} members inside ${group.geofence.name}")
                     }
                 }
             }

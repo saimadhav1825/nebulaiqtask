@@ -21,22 +21,13 @@ class SendBreachNotificationUseCase(
     suspend operator fun invoke(
         alert: BreachAlert,
         groupName: String,
-        recipientCount: Int = 9,
-        isLocalUserOwner: Boolean? = null
+        recipientCount: Int = 9
     ) {
         val currentUserId = userRepository.currentUserProfile.value.userId
 
         // 1. The member who stepped outside must NEVER receive a notification on their device
+        // Requirement: "Other members of the group are notified"
         if (alert.memberId == currentUserId) {
-            return
-        }
-
-        // 2. ONLY the group OWNER receives breach notifications when joined members step outside
-        val isOwner = isLocalUserOwner ?: run {
-            val group = trackingGroupRepository.getTrackingGroup(alert.groupId)
-            group?.members?.any { (it.id == currentUserId || it.isLocalUser) && it.role == MemberRole.LEADER } ?: false
-        }
-        if (!isOwner) {
             return
         }
 
