@@ -116,6 +116,7 @@ class TrackingGroupRepositoryImpl(
 
         // Save to local cache immediately
         localDataSource.saveGroup(groupDto)
+        userRepository.saveActiveGroupId(groupDto.id)
 
         // Sync to Firebase
         try {
@@ -157,6 +158,7 @@ class TrackingGroupRepositoryImpl(
                 }
                 val finalGroup = groupDto.copy(members = updatedMembers)
                 localDataSource.saveGroup(finalGroup)
+                userRepository.saveActiveGroupId(finalGroup.id)
                 Result.success(groupMapper.toDomain(finalGroup))
             } else {
                 Result.failure(remoteResult.exceptionOrNull() ?: IllegalStateException("Could not join group"))
@@ -168,6 +170,7 @@ class TrackingGroupRepositoryImpl(
                 val updatedMembers = (existing.members.filterNot { it.id == newMember.id } + newMember)
                 val updated = existing.copy(members = updatedMembers)
                 localDataSource.saveGroup(updated)
+                userRepository.saveActiveGroupId(updated.id)
                 Result.success(groupMapper.toDomain(updated))
             } else {
                 Result.failure(e)
